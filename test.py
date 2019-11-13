@@ -58,17 +58,27 @@ glfw.make_context_current(window)
 
             #Vertices        #Colors
 vertices = [-0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 
-            0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
-            -0.5, 0.5, 0.0, 0.0, 0.0, 1.0,
-            0.5, 0.5, 0.0, 1.0, 1.0, 1.0]
+            0.5, -0.5, 0.0,  0.0, 1.0, 0.0,
+            -0.5, 0.5, 0.0,  0.0, 0.0, 1.0,
+            0.5, 0.5, 0.0,   1.0, 1.0, 1.0,
+            0.0, 0.75, 0.0,  1.0, 1.0, 0.0]
+
+indices =  [0, 1, 2,
+            1, 2, 3,
+            2, 3, 4]
 
 vertices = np.array(vertices, dtype=np.float32)
+indices = np.array(indices, dtype=np.uint32)
 
 shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
 VBO = glGenBuffers(1)
 glBindBuffer(GL_ARRAY_BUFFER, VBO)
 glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+
+EBO = glGenBuffers(1)
+glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
+glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
 #position = glGetAttribLocation(shader, "a_position")
 glEnableVertexAttribArray(0)
@@ -99,7 +109,8 @@ while not glfw.window_should_close(window):
     # glRotatef(sin(ct)*45, 0, 0, 1)
     # glTranslate(sin(ct), cos(ct), 0)
     # glDrawArrays(GL_TRIANGLES, 0, 3)
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+    # glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
+    glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
     glfw.swap_buffers(window)
 
 # Terminate glfw, free alocated resources
