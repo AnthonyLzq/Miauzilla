@@ -8,8 +8,8 @@ import numpy as np
 vertex_src = """
 #version 310 es
 
-in vec3 a_position;
-in vec3 a_color;
+layout(location = 0) in vec3 a_position;
+layout(location = 1) in vec3 a_color;
 
 out vec3 v_color;
 
@@ -32,6 +32,10 @@ void main(){
 }
 """
 
+def window_resize(window, width, height):
+    glViewport(0, 0, width, height)
+
+
 # Initializing glfw library
 if not glfw.init():
     raise Exception("Glfw can not be initialazed!")
@@ -47,6 +51,7 @@ if not window:
 
 # Set window's position
 glfw.set_window_pos(window, 400, 200)
+glfw.set_window_size_callback(window, window_resize)
 
 # Make the context current
 glfw.make_context_current(window)
@@ -54,7 +59,8 @@ glfw.make_context_current(window)
             #Vertices        #Colors
 vertices = [-0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 
             0.5, -0.5, 0.0, 0.0, 1.0, 0.0,
-            0.0, 0.5, 0.0, 0.0, 0.0, 1.0]
+            -0.5, 0.5, 0.0, 0.0, 0.0, 1.0,
+            0.5, 0.5, 0.0, 1.0, 1.0, 1.0]
 
 vertices = np.array(vertices, dtype=np.float32)
 
@@ -64,13 +70,13 @@ VBO = glGenBuffers(1)
 glBindBuffer(GL_ARRAY_BUFFER, VBO)
 glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
 
-position = glGetAttribLocation(shader, "a_position")
-glEnableVertexAttribArray(position)
-glVertexAttribPointer(position, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(0))
+#position = glGetAttribLocation(shader, "a_position")
+glEnableVertexAttribArray(0)
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(0))
 
-color = glGetAttribLocation(shader, "a_color")
-glEnableVertexAttribArray(color)
-glVertexAttribPointer(color, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(12))
+#color = glGetAttribLocation(shader, "a_color")
+glEnableVertexAttribArray(1)
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(12))
 
 glUseProgram(shader)
 # glEnableClientState(GL_VERTEX_ARRAY)
@@ -93,7 +99,7 @@ while not glfw.window_should_close(window):
     # glRotatef(sin(ct)*45, 0, 0, 1)
     # glTranslate(sin(ct), cos(ct), 0)
     # glDrawArrays(GL_TRIANGLES, 0, 3)
-    glDrawArrays(GL_TRIANGLES, 0, 3)
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
     glfw.swap_buffers(window)
 
 # Terminate glfw, free alocated resources
