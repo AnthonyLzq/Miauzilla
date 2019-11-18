@@ -11,3 +11,6 @@ Dibujando el mismo cuadrado reciclando índices, usando `GL_ELEMENT_ARRAY_BUFFER
 
 ## Versión 1.0.3:
 Dibujando un cubo en lugar de un cuadrado, y haciéndolo rotar.
+
+## Versión 1.0.4:
+Añadiendo texturas al cubo, estas son imágenes guardadas en la carpeta _textures_.

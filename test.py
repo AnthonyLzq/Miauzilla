@@ -4,6 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 import numpy as np
 import pyrr
+from PIL import Image
 
 
 vertex_src = """
@@ -11,14 +12,17 @@ vertex_src = """
 
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_color;
+layout(location = 2) in vec2 a_texture;
 
 uniform mat4 rotation;
 
 out vec3 v_color;
+out vec2 v_texture;
 
 void main(){
     gl_Position = rotation * vec4(a_position, 1.0);
     v_color = a_color;
+    v_texture = a_texture;
 }
 """
 
@@ -28,10 +32,15 @@ fragment_src = """
 precision mediump float;
 
 in vec3 v_color;
+in vec2 v_texture; 
+
 out vec4 out_color;
 
+uniform sampler2D s_texture;
+
 void main(){
-    out_color = vec4(v_color, 1.0);
+    //out_color = vec4(v_color, 1.0);
+    out_color = texture(s_texture, v_texture);
 }
 """
 
@@ -54,74 +63,105 @@ if not window:
 
 # Set window's position
 glfw.set_window_pos(window, 400, 200)
+# Set the callback function for window resize
 glfw.set_window_size_callback(window, window_resize)
 
 # Make the context current
 glfw.make_context_current(window)
 
-            #Vertices         #Colors
-vertices = [-0.5, -0.5, 0.5,  1.0, 0.0, 0.0, 
-            0.5, -0.5, 0.5,   0.0, 1.0, 0.0,
-            0.5, 0.5, 0.5,   0.0, 0.0, 1.0,
-            -0.5, 0.5, 0.5,   1.0, 1.0, 1.0,
+            #Vertices          #Colors         #Texture
+vertices = [-0.5, -0.5,  0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
+             0.5, -0.5,  0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
+             0.5,  0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
+            -0.5,  0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
 
-            -0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 
-            0.5, -0.5, -0.5,  0.0, 1.0, 0.0,
-            0.5, 0.5, -0.5,   0.0, 0.0, 1.0,
-            -0.5, 0.5, -0.5,  1.0, 1.0, 1.0]
+            -0.5, -0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
+             0.5, -0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
+             0.5,  0.5, -0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
+            -0.5,  0.5, -0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
 
-indices =  [0, 1, 2, 2, 3, 0,
-            4, 5, 6, 6, 7, 4,
-            4, 5, 1, 1, 0, 4,
-            6, 7, 3, 3, 2, 6,
-            5, 6, 2, 2, 1, 5,
-            7, 4, 0, 0, 3, 7]
+             0.5, -0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
+             0.5,  0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
+             0.5,  0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
+             0.5, -0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+
+            -0.5,  0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
+            -0.5, -0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
+            -0.5, -0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
+            -0.5,  0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+
+            -0.5, -0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
+             0.5, -0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
+             0.5, -0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
+            -0.5, -0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+
+             0.5,  0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
+            -0.5,  0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
+            -0.5,  0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
+             0.5,  0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0]
+            
+
+indices =  [0,  1,  2,  2,  3,  0,
+            4,  5,  6,  6,  7,  4,
+            8,  9, 10, 10, 11,  8,
+            12, 13, 14, 14, 15, 12,
+            16, 17, 18, 18, 19, 16,
+            20, 21, 22, 22, 23, 20]
 
 vertices = np.array(vertices, dtype=np.float32)
 indices = np.array(indices, dtype=np.uint32)
 
 shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
+# Vertex Buffer Object
 VBO = glGenBuffers(1)
 glBindBuffer(GL_ARRAY_BUFFER, VBO)
 glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
 
+# Element Buffer Object
 EBO = glGenBuffers(1)
 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
-#position = glGetAttribLocation(shader, "a_position")
 glEnableVertexAttribArray(0)
-glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(0))
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertices.itemsize * 8, ctypes.c_void_p(0))
 
-#color = glGetAttribLocation(shader, "a_color")
 glEnableVertexAttribArray(1)
-glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 24, ctypes.c_void_p(12))
+glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertices.itemsize * 8, ctypes.c_void_p(12))
+
+glEnableVertexAttribArray(2)
+glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertices.itemsize * 8, ctypes.c_void_p(24))
+
+texture = glGenTextures(1)
+glBindTexture(GL_TEXTURE_2D, texture)
+
+# Set texture wrapping parameters
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+# Set texture filtering parameters
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+# load image
+image = Image.open("./textures/ursa.png")
+image = image.transpose(Image.FLIP_TOP_BOTTOM)
+image_data = image.convert("RGBA").tobytes()
+
+glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.width, image.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data)
+
 
 glUseProgram(shader)
-# glEnableClientState(GL_VERTEX_ARRAY)
-# glVertexPointer(3, GL_FLOAT, 0, vertices)
-
-# glEnableClientState(GL_COLOR_ARRAY)
-# glColorPointer(3, GL_FLOAT, 0, colors)
-
 glClearColor(0, 0.1, 0.1, 1)
 glEnable(GL_DEPTH_TEST)
+glEnable(GL_BLEND)
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
 rotation_loc = glGetUniformLocation(shader, "rotation")
 
 # The main aplication loop
 while not glfw.window_should_close(window):
     glfw.poll_events()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
-    # ct = glfw.get_time()
-
-    # glLoadIdentity()
-    # glScale(abs(sin(ct)), abs(sin(ct)), 1)
-    # glRotatef(sin(ct)*45, 0, 0, 1)
-    # glTranslate(sin(ct), cos(ct), 0)
-    # glDrawArrays(GL_TRIANGLES, 0, 3)
-    # glDrawArrays(GL_TRIANGLE_STRIP, 0, 4)
 
     rot_x = pyrr.Matrix44.from_x_rotation(0.5*glfw.get_time())
     rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
