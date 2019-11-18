@@ -8,3 +8,6 @@ Dibujando un cuadrado usando `GL_TRIANGLE_STRIP` y añadida una función para re
 
 ## Versión 1.0.2:
 Dibujando el mismo cuadrado reciclando índices, usando `GL_ELEMENT_ARRAY_BUFFER`.
+
+## Versión 1.0.3:
+Dibujando un cubo en lugar de un cuadrado, y haciéndolo rotar.
