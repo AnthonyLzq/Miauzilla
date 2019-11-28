@@ -11,17 +11,16 @@ vertex_src = """
 #version 310 es
 
 layout(location = 0) in vec3 a_position;
-layout(location = 1) in vec3 a_color;
-layout(location = 2) in vec2 a_texture;
+layout(location = 1) in vec2 a_texture;
 
-uniform mat4 rotation;
+uniform mat4 model; //combined translation and rotation
+uniform mat4 projection;
 
 out vec3 v_color;
 out vec2 v_texture;
 
 void main(){
-    gl_Position = rotation * vec4(a_position, 1.0);
-    v_color = a_color;
+    gl_Position = projection * model * vec4(a_position, 1.0);
     v_texture = a_texture;
 }
 """
@@ -31,7 +30,6 @@ fragment_src = """
 
 precision mediump float;
 
-in vec3 v_color;
 in vec2 v_texture; 
 
 out vec4 out_color;
@@ -39,21 +37,21 @@ out vec4 out_color;
 uniform sampler2D s_texture;
 
 void main(){
-    //out_color = vec4(v_color, 1.0);
     out_color = texture(s_texture, v_texture);
 }
 """
 
 def window_resize(window, width, height):
     glViewport(0, 0, width, height)
-
+    projection = pyrr.matrix44.create_perspective_projection_matrix(45, width/height, 0.1, 100)
+    glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
 # Initializing glfw library
 if not glfw.init():
     raise Exception("Glfw can not be initialazed!")
 
 # Creating the window
-window = glfw.create_window(1080, 640, "My OpenGl Window", None, None)
+window = glfw.create_window(1080, 720, "My OpenGl Window", None, None)
 
 # Check if the window was created
 if not window:
@@ -69,36 +67,36 @@ glfw.set_window_size_callback(window, window_resize)
 # Make the context current
 glfw.make_context_current(window)
 
-            #Vertices          #Colors         #Texture
-vertices = [-0.5, -0.5,  0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
-             0.5, -0.5,  0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
-             0.5,  0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
-            -0.5,  0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+            #Vertices          #Texture
+vertices = [-0.5, -0.5,  0.5,  0.0, 0.0,
+             0.5, -0.5,  0.5,  1.0, 0.0,
+             0.5,  0.5,  0.5,  1.0, 1.0,
+            -0.5,  0.5,  0.5,  0.0, 1.0,
 
-            -0.5, -0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
-             0.5, -0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
-             0.5,  0.5, -0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
-            -0.5,  0.5, -0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+            -0.5, -0.5, -0.5,  0.0, 0.0,
+             0.5, -0.5, -0.5,  1.0, 0.0,
+             0.5,  0.5, -0.5,  1.0, 1.0,
+            -0.5,  0.5, -0.5,  0.0, 1.0,
 
-             0.5, -0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
-             0.5,  0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
-             0.5,  0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
-             0.5, -0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+             0.5, -0.5, -0.5,  0.0, 0.0,
+             0.5,  0.5, -0.5,  1.0, 0.0,
+             0.5,  0.5,  0.5,  1.0, 1.0,
+             0.5, -0.5,  0.5,  0.0, 1.0,
 
-            -0.5,  0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
-            -0.5, -0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
-            -0.5, -0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
-            -0.5,  0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+            -0.5,  0.5, -0.5,  0.0, 0.0,
+            -0.5, -0.5, -0.5,  1.0, 0.0,
+            -0.5, -0.5,  0.5,  1.0, 1.0,
+            -0.5,  0.5,  0.5,  0.0, 1.0,
 
-            -0.5, -0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
-             0.5, -0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
-             0.5, -0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
-            -0.5, -0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0,
+            -0.5, -0.5, -0.5,  0.0, 0.0,
+             0.5, -0.5, -0.5,  1.0, 0.0,
+             0.5, -0.5,  0.5,  1.0, 1.0,
+            -0.5, -0.5,  0.5,  0.0, 1.0,
 
-             0.5,  0.5, -0.5,  1.0, 0.0, 0.0,  0.0, 0.0,
-            -0.5,  0.5, -0.5,  0.0, 1.0, 0.0,  1.0, 0.0,
-            -0.5,  0.5,  0.5,  0.0, 0.0, 1.0,  1.0, 1.0,
-             0.5,  0.5,  0.5,  1.0, 1.0, 1.0,  0.0, 1.0]
+             0.5,  0.5, -0.5,  0.0, 0.0,
+            -0.5,  0.5, -0.5,  1.0, 0.0,
+            -0.5,  0.5,  0.5,  1.0, 1.0,
+             0.5,  0.5,  0.5,  0.0, 1.0]
             
 
 indices =  [0,  1,  2,  2,  3,  0,
@@ -124,13 +122,10 @@ glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
 glEnableVertexAttribArray(0)
-glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertices.itemsize * 8, ctypes.c_void_p(0))
+glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertices.itemsize * 5, ctypes.c_void_p(0))
 
 glEnableVertexAttribArray(1)
-glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, vertices.itemsize * 8, ctypes.c_void_p(12))
-
-glEnableVertexAttribArray(2)
-glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, vertices.itemsize * 8, ctypes.c_void_p(24))
+glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, vertices.itemsize * 5, ctypes.c_void_p(12))
 
 texture = glGenTextures(1)
 glBindTexture(GL_TEXTURE_2D, texture)
@@ -156,7 +151,14 @@ glEnable(GL_DEPTH_TEST)
 glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-rotation_loc = glGetUniformLocation(shader, "rotation")
+projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
+translation = pyrr.matrix44.create_from_translation(pyrr.Vector3([0, 0, -3]))
+
+model_loc = glGetUniformLocation(shader, "model")
+proj_loc = glGetUniformLocation(shader, "projection")
+
+glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
+
 
 # The main aplication loop
 while not glfw.window_should_close(window):
@@ -165,9 +167,11 @@ while not glfw.window_should_close(window):
 
     rot_x = pyrr.Matrix44.from_x_rotation(0.5*glfw.get_time())
     rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
-    # glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, rot_x * rot_y)
-    # glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, rot_x @ rot_y)
-    glUniformMatrix4fv(rotation_loc, 1, GL_FALSE, pyrr.matrix44.multiply(rot_x, rot_y))
+
+    rotation = pyrr.matrix44.multiply(rot_x, rot_y)
+    model = pyrr.matrix44.multiply(rotation, translation)
+
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
 
 
     glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
