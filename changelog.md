@@ -17,3 +17,7 @@ Añadiendo texturas al cubo, estas son imágenes guardadas en la carpeta _textur
 
 ## Versión 1.0.5:
 Añadiendo perspectiva al cubo.
+
+## Versión 1.0.6:
+-   _test.py_ -> _miauzilla.py_
+-   _xd.py_ -> _test.py_

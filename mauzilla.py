@@ -1,14 +1,10 @@
-import os
-os.environ['SDL_VIDEO_WINDOW_POS'] = '400,200'
-
+import glfw
 from math import *
-from PIL import Image
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 import numpy as np
 import pyrr
-import pygame
-from pygame.locals import *
+from PIL import Image
 
 
 vertex_src = """
@@ -45,22 +41,31 @@ void main(){
 }
 """
 
-def window_resize(event):
-    if event.type == pygame.VIDEORESIZE:
-        glViewport(0, 0, event.w, event.h)
-        print(event.w, event.h)
-        projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1.0*event.w/event.h, 0.1, 100)
-        glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
-        pygame.display.flip()
+def window_resize(window, width, height):
+    glViewport(0, 0, width, height)
+    projection = pyrr.matrix44.create_perspective_projection_matrix(45, width/height, 0.1, 100)
+    glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
-def leave(event):
-    if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == K_ESCAPE):
-        pygame.quit()
-        quit()
+# Initializing glfw library
+if not glfw.init():
+    raise Exception("Glfw can not be initialazed!")
 
+# Creating the window
+window = glfw.create_window(1080, 720, "My OpenGl Window", None, None)
 
-pygame.init()
-pygame.display.set_mode((1080, 720), pygame.OPENGL | pygame.DOUBLEBUF | pygame.RESIZABLE)
+# Check if the window was created
+if not window:
+    glfw.terminate()
+    # Return the elapsed time, since init was called
+    raise Exception('Glfw can not be created!')
+
+# Set window's position
+glfw.set_window_pos(window, 400, 200)
+# Set the callback function for window resize
+glfw.set_window_size_callback(window, window_resize)
+
+# Make the context current
+glfw.make_context_current(window)
 
             #Vertices          #Texture
 vertices = [-0.5, -0.5,  0.5,  0.0, 0.0,
@@ -156,23 +161,21 @@ glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
 
 # The main aplication loop
-while True:
-    for event in pygame.event.get():
-        window_resize(event)
-        leave(event)
-    
-    # Current time
-    ct = pygame.time.get_ticks() / 1000
-
+while not glfw.window_should_close(window):
+    glfw.poll_events()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    rot_x = pyrr.Matrix44.from_x_rotation(0.5 * ct)
-    rot_y = pyrr.Matrix44.from_y_rotation(0.5 * ct)
+    rot_x = pyrr.Matrix44.from_x_rotation(0.5*glfw.get_time())
+    rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
 
     rotation = pyrr.matrix44.multiply(rot_x, rot_y)
     model = pyrr.matrix44.multiply(rotation, translation)
 
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
 
+
     glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
-    pygame.display.flip()
+    glfw.swap_buffers(window)
+
+# Terminate glfw, free alocated resources
+glfw.terminate()
