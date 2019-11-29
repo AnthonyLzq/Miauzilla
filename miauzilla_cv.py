@@ -14,7 +14,7 @@ vertex_src = """
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texture;
 
-uniform mat4 model; //combined translation and rotation
+uniform mat4 model; //translation
 uniform mat4 projection;
 
 //out vec3 v_color;
@@ -95,6 +95,13 @@ textureData =  [textureSurface[0].convert("RGBA").tobytes(),
                 textureSurface[1].convert("RGBA").tobytes()]
 
 class Cube:
+    '''
+    Esta clase es la que representará los cubos que serán renderizados en la ventana principal.
+    Se inician los vértices modificando la constante 'vertices' e 'indices' que se encuentran líneas arriba, pasando estas a numpys array.
+    
+    Esta clase contiene los siguientes métodos:
+        - load_texture: se encarga de envolver al cubo con una textura pasada como parámetro.
+    '''
     def __init__(self):
         # Conversión de array a np array, para los vértices e índices.
         self.vertices = np.array(vertices, dtype=np.float32)
@@ -115,6 +122,13 @@ class Cube:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface[file].width, textureSurface[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData[file])
 
 class Window:
+    '''
+    Esta clase es la que representa la ventana principal donde el juego toma lugar, se inicializa recibiendo como parámetros un ancho, largo y un título.
+    La ventana se crea por defecto en la posición (400, 200).
+    
+    Esta clase contiene los siguientes métodos:
+        - window_resize: es la callback que se ejecuta siempre que haya un evento de resize de ventana.
+    '''
     def __init__(self, width: int, height: int, title: str):
         if not glfw.init():
             raise Exception("glfw can not be initilized")
@@ -136,6 +150,9 @@ class Window:
 
 
 class Shader:
+    '''
+    Esta clase representará al shader que utilizará el programa para renderizar los objetos OpenGl. Este se inicializa recibiendo como parámetro el vector que almacena los cubos a renderizar.
+    '''
     def __init__(self, cubes):        
         self.shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
@@ -162,7 +179,7 @@ class Shader:
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
 
-#Seteando cantidad de cubos obstaculos
+# Seteando cantidad de cubos obstaculos
 n = 30
 
 my_cubes = [0]*(n+1)
@@ -171,11 +188,11 @@ for i in range(n):
     my_cubes[i].load_texture(random.randint(0, 1))
 
 
-#Creando el cubo principal que será el personaje
+# Creando el cubo principal que será el personaje
 my_cubes[n] = Cube()
 my_cubes[n].load_texture(1)
 
-#Iniciando los Shaders de my_cubes
+# Iniciando los Shaders de my_cubes
 main_shader = Shader(my_cubes)
 
 
@@ -186,22 +203,27 @@ glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
-initial_cube_position = [0]*(n+1)
+
+# List that stores positions of the cubes
+cube_position = [0]*(n+1)
 for i in range(n):
-    initial_cube_position[i] = pyrr.Vector3([
+    # Initializing the positions of the cubes
+    cube_position[i] = pyrr.Vector3([
                         random.randrange(-5.0, 5.0), 
                         0.0, 
                         random.randrange(-100, -40)])
 
-#Seteando las posicion del pj
-initial_cube_position[n] = pyrr.Vector3([
+# Seteando las posicion del personaje principal
+cube_position[n] = pyrr.Vector3([
                         0.0, 
                         0.0, 
                         -4.0])
 
+# Matrix that will control the translation of the cubes
 matrix_cube_translation = [0]*(n+1)
 for i in range(n+1):
-    matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
+    # Seting the translation matrix to the initial position of the cube
+    matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
 
 # eye, target, up
 # view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 0, 3]), pyrr.Vector3([0, 0, 0]), pyrr.Vector3([0, 1, 0]))
@@ -215,24 +237,24 @@ glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
 def main():
     translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
+
     # The main aplication loop
     while not glfw.window_should_close(main_window.win):
         glfw.poll_events()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        rot_x = pyrr.Matrix44.from_x_rotation(0.5*glfw.get_time())
-        rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
-        rotation = 1#pyrr.matrix44.multiply(rot_x, rot_y)
-
         for i in range(n+1):
-
+            # We will translate every object, except the main character
             if i != n:
-                initial_cube_position[i] += translate_cube_z
-            model = pyrr.matrix44.multiply(rotation, matrix_cube_translation[i])
+                cube_position[i] += translate_cube_z
+                if cube_position[i][2] >= 0.0:
+                    cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 0.0, random.randrange(-100, -40)])
+
+            model = matrix_cube_translation[i]
             glBindTexture(GL_TEXTURE_2D, my_cubes[i].id_texture)
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
             glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
-            matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
+            matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
 
         glfw.swap_buffers(main_window.win)
 

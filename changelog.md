@@ -67,5 +67,11 @@
 
 ## Versión 1.0.12:
 -   Se agregó el objeto que representará al gato.
--   Se configuró para que el gato no se desplace a comparacion de los demás.
--   By: E.D.
+-   Se configuró el objeto para que el gato no se desplace a comparacion de los demás.
+-   By: E.S.
+
+## Versión 1.0.13:
+-   Se agregó documentación en cada una de las clases.
+-   Eliminación definitiva de la rotación de cubos.
+-   Ilusión de movimiento perpetuo de los _obstáculos_ que el personaje principal debe evitar. Una vez que pasan el sistema de referencia de la cámara se redibujan.
+-   By: A.L.
