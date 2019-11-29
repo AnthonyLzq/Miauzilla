@@ -58,3 +58,9 @@
 -   Agregada un poco de documentación.
 -   Pendiente de corregir el bug de superposición de texturas.
 -   By: A.L.
+
+## Versión 1.0.11:
+-   Agregado una lista que almacena las texturas `textureSurface` y otra que almacena las texturas transformadas a bytes `textureData`.
+-   Corregido el bug de superposición de texturas.
+-   Añadiendo texturas de forma aleatoria a los cubos que se acercan hacia la cámara.
+-   By: A.L.

@@ -82,6 +82,17 @@ indices =  [0,  1,  2,  2,  3,  0,
             16, 17, 18, 18, 19, 16,
             20, 21, 22, 22, 23, 20]
 
+# List that stores textures
+textureSurface = [  
+                Image.open('./textures/cat.png'), 
+                Image.open('./textures/ursa.png')]
+
+# Reversing the images to be properly render
+for i in range(len(textureSurface)):
+    textureSurface[i] = textureSurface[i].transpose(Image.FLIP_TOP_BOTTOM)
+    
+textureData =  [textureSurface[0].convert("RGBA").tobytes(), 
+                textureSurface[1].convert("RGBA").tobytes()]
 
 class Cube:
     def __init__(self):
@@ -91,9 +102,9 @@ class Cube:
         self.id_texture = 0
     
     def load_texture(self, file):
+        # Generating a texture and saving it in the id
         self.id_texture = glGenTextures(1)
         glBindTexture(GL_TEXTURE_2D, self.id_texture)
-
         # Set texture wrapping parameters
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -101,14 +112,7 @@ class Cube:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-        # load image
-        images = [Image.open('./textures/ursa.png'), Image.open('./textures/cat.png')]
-        for i in range(len(images)):
-            images[i] = images[i].transpose(Image.FLIP_TOP_BOTTOM)
-
-        image_data = images[0].convert("RGBA").tobytes(), images[1].convert("RGBA").tobytes()
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, images[file].width, images[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data[file])
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface[file].width, textureSurface[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData[file])
 
 class Window:
     def __init__(self, width: int, height: int, title: str):
@@ -161,7 +165,7 @@ main_window = Window(1080, 720, "Miauzilla")
 my_cubes = [0]*30
 for i in range(30):
     my_cubes[i] = Cube()
-    my_cubes[i].load_texture(0) # TODO: Corregir la superposición de texturas.
+    my_cubes[i].load_texture(random.randint(0, 1))
 
 main_shader = Shader(my_cubes)
 
@@ -179,16 +183,11 @@ for i in range(30):
                         random.randrange(-5.0, 5.0), 
                         0.0, 
                         random.randrange(-100, -40)])
-# initial_cube_position[0] = pyrr.Vector3([1.0, 0.0, -10.0])
-# initial_cube_position[1] = pyrr.Vector3([-1.0, 0.0, -10.0])
-# initial_cube_position[2] = pyrr.Vector3([0.0, 1.0, -15.0])
+
 
 matrix_cube_translation = [0]*30
 for i in range(30):
     matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
-# matrix_cube_translation[0] = pyrr.matrix44.create_from_translation(initial_cube_position[0])
-# matrix_cube_translation[1] = pyrr.matrix44.create_from_translation(initial_cube_position[1])
-# matrix_cube_translation[2] = pyrr.matrix44.create_from_translation(initial_cube_position[2])
 
 # eye, target, up
 # view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 0, 3]), pyrr.Vector3([0, 0, 0]), pyrr.Vector3([0, 1, 0]))
@@ -211,11 +210,10 @@ def main():
         rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
         rotation = 1#pyrr.matrix44.multiply(rot_x, rot_y)
 
-        # initial_cube_position[0] += translate_cube_z
-
         for i in range(30):
             initial_cube_position[i] += translate_cube_z
             model = pyrr.matrix44.multiply(rotation, matrix_cube_translation[i])
+            glBindTexture(GL_TEXTURE_2D, my_cubes[i].id_texture)
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
             glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
             matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
