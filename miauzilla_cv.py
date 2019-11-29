@@ -203,18 +203,20 @@ def main():
 
         cubes_vector[0] += translate_cube_x
 
-        model = pyrr.matrix44.multiply(rotation, cubes_translation[0])
-        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
-        glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+        for i in range(3):
+            model = pyrr.matrix44.multiply(rotation, cubes_translation[i])
+            glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+            glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+            
         cubes_translation[0] = pyrr.matrix44.create_from_translation(cubes_vector[0])
 
-        model = pyrr.matrix44.multiply(rotation, cubes_translation[1])
-        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
-        glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+        # model = pyrr.matrix44.multiply(rotation, cubes_translation[1])
+        # glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+        # glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
 
-        model = pyrr.matrix44.multiply(rotation, cubes_translation[2])
-        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
-        glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+        # model = pyrr.matrix44.multiply(rotation, cubes_translation[2])
+        # glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+        # glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
 
         glfw.swap_buffers(main_window.win)
 

@@ -40,4 +40,9 @@
 
 ## Versión 1.0.9:
 -   Versión inicial de la traslación de los cubos, ahora uno de ellos se acerca hacia la cámara para luego desaparecer.
+-   Arreglado el archivo _changelog.md_.
+-   By: A.L.
+
+## Versión 1.0.9b:
+-   Optimización de la renderización/traslación de los cubos, ahora se realiza con un bucle en lugar de hacerlo uno por uno.
 -   By: A.L.
