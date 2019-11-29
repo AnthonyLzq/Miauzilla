@@ -170,18 +170,28 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
 
+cubes_vector = [0]*3
+cubes_vector[0] = pyrr.Vector3([1.0, 0.0, -10.0])
+cubes_vector[1] = pyrr.Vector3([-1.0, 0.0, -10.0])
+cubes_vector[2] = pyrr.Vector3([0.0, 1.0, -15.0])
+
 cubes_translation = [0]*3 
-cubes_translation[0] = pyrr.matrix44.create_from_translation(pyrr.Vector3([1.0, 0.0, -10.0]))
-cubes_translation[1] = pyrr.matrix44.create_from_translation(pyrr.Vector3([-1, 0, -10]))
-cubes_translation[2] = pyrr.matrix44.create_from_translation(pyrr.Vector3([0, 1, -15]))
+cubes_translation[0] = pyrr.matrix44.create_from_translation(cubes_vector[0])
+cubes_translation[1] = pyrr.matrix44.create_from_translation(cubes_vector[1])
+cubes_translation[2] = pyrr.matrix44.create_from_translation(cubes_vector[2])
+
+# eye, target, up
+view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 0, 3]), pyrr.Vector3([0, 0, 0]), pyrr.Vector3([0, 1, 0]))
 
 model_loc = glGetUniformLocation(main_shader.shader, "model")
 proj_loc = glGetUniformLocation(main_shader.shader, "projection")
+view_loc = glGetUniformLocation(main_shader.shader, "view")
 
 glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
+glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
 def main():
-    
+    translate_cube_x = pyrr.Vector3([0.0, 0.0, 0.1])
     # The main aplication loop
     while not glfw.window_should_close(main_window.win):
         glfw.poll_events()
@@ -189,13 +199,14 @@ def main():
 
         rot_x = pyrr.Matrix44.from_x_rotation(0.5*glfw.get_time())
         rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
-
         rotation = pyrr.matrix44.multiply(rot_x, rot_y)
+
+        cubes_vector[0] += translate_cube_x
 
         model = pyrr.matrix44.multiply(rotation, cubes_translation[0])
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
         glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
-        #cubes_translation[0] += pyrr.matrix44.create_from_translation(pyrr.Vector3([0.0, 0.0, -0.1]))
+        cubes_translation[0] = pyrr.matrix44.create_from_translation(cubes_vector[0])
 
         model = pyrr.matrix44.multiply(rotation, cubes_translation[1])
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
