@@ -21,3 +21,7 @@ Añadiendo perspectiva al cubo.
 ## Versión 1.0.6:
 -   _test.py_ -> _miauzilla.py_
 -   _xd.py_ -> _test.py_
+
+## Versión 1.0.7:
+-   Cambiando el paradigma del programa, ahora se trabaja con POO en lugar de programación estructurada. Se creó el archivo _miauzilla\_cv.py_ en el cual se utiliza el paradigma POO.
+-   _test.py_ y _miazuilla.py_ conservan el paradigma de programación estructurada, utilizando _pygame_ y _glfw_ respectivamente.

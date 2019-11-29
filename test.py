@@ -48,7 +48,7 @@ void main(){
 def window_resize(event):
     if event.type == pygame.VIDEORESIZE:
         glViewport(0, 0, event.w, event.h)
-        print(event.w, event.h)
+        #print(event.w, event.h)
         projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1.0*event.w/event.h, 0.1, 100)
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
         pygame.display.flip()
