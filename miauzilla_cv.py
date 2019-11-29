@@ -4,6 +4,7 @@ from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 import numpy as np
 import pyrr
+import random
 from PIL import Image
 
 
@@ -155,8 +156,8 @@ class Shader:
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
 
-my_cubes = [0]*3
-for i in range(3):
+my_cubes = [0]*30
+for i in range(30):
     my_cubes[i] = Cube()
     my_cubes[i].load_texture(1)
 
@@ -170,28 +171,35 @@ glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
 
-cubes_vector = [0]*3
-cubes_vector[0] = pyrr.Vector3([1.0, 0.0, -10.0])
-cubes_vector[1] = pyrr.Vector3([-1.0, 0.0, -10.0])
-cubes_vector[2] = pyrr.Vector3([0.0, 1.0, -15.0])
+initial_cube_position = [0]*30
+for i in range(30):
+    initial_cube_position[i] = pyrr.Vector3([
+                        random.randrange(-5.0, 5.0), 
+                        0.0, 
+                        random.randrange(-100, -40)])
+# initial_cube_position[0] = pyrr.Vector3([1.0, 0.0, -10.0])
+# initial_cube_position[1] = pyrr.Vector3([-1.0, 0.0, -10.0])
+# initial_cube_position[2] = pyrr.Vector3([0.0, 1.0, -15.0])
 
-cubes_translation = [0]*3 
-cubes_translation[0] = pyrr.matrix44.create_from_translation(cubes_vector[0])
-cubes_translation[1] = pyrr.matrix44.create_from_translation(cubes_vector[1])
-cubes_translation[2] = pyrr.matrix44.create_from_translation(cubes_vector[2])
+matrix_cube_translation = [0]*30
+for i in range(30):
+    matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
+# matrix_cube_translation[0] = pyrr.matrix44.create_from_translation(initial_cube_position[0])
+# matrix_cube_translation[1] = pyrr.matrix44.create_from_translation(initial_cube_position[1])
+# matrix_cube_translation[2] = pyrr.matrix44.create_from_translation(initial_cube_position[2])
 
 # eye, target, up
-view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 0, 3]), pyrr.Vector3([0, 0, 0]), pyrr.Vector3([0, 1, 0]))
+# view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 0, 3]), pyrr.Vector3([0, 0, 0]), pyrr.Vector3([0, 1, 0]))
 
 model_loc = glGetUniformLocation(main_shader.shader, "model")
 proj_loc = glGetUniformLocation(main_shader.shader, "projection")
 view_loc = glGetUniformLocation(main_shader.shader, "view")
 
 glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
-glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
+# glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
 def main():
-    translate_cube_x = pyrr.Vector3([0.0, 0.0, 0.1])
+    translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
     # The main aplication loop
     while not glfw.window_should_close(main_window.win):
         glfw.poll_events()
@@ -199,24 +207,16 @@ def main():
 
         rot_x = pyrr.Matrix44.from_x_rotation(0.5*glfw.get_time())
         rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
-        rotation = pyrr.matrix44.multiply(rot_x, rot_y)
+        rotation = 1#pyrr.matrix44.multiply(rot_x, rot_y)
 
-        cubes_vector[0] += translate_cube_x
+        # initial_cube_position[0] += translate_cube_z
 
-        for i in range(3):
-            model = pyrr.matrix44.multiply(rotation, cubes_translation[i])
+        for i in range(30):
+            initial_cube_position[i] += translate_cube_z
+            model = pyrr.matrix44.multiply(rotation, matrix_cube_translation[i])
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
             glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
-            
-        cubes_translation[0] = pyrr.matrix44.create_from_translation(cubes_vector[0])
-
-        # model = pyrr.matrix44.multiply(rotation, cubes_translation[1])
-        # glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
-        # glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
-
-        # model = pyrr.matrix44.multiply(rotation, cubes_translation[2])
-        # glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
-        # glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+            matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
 
         glfw.swap_buffers(main_window.win)
 

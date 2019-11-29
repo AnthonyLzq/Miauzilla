@@ -46,3 +46,10 @@
 ## Versión 1.0.9b:
 -   Optimización de la renderización/traslación de los cubos, ahora se realiza con un bucle en lugar de hacerlo uno por uno.
 -   By: A.L.
+
+## Versión 1.0.10:
+-   Se renderizan 30 cubos en lugar de 3.
+-   Optimización del establecimiento de posiciones iniciales de los cubos y las matrices de traslación de los cubos, ahora se utiliza un bucle.
+-   Eliminación temporal de la rotación.
+-   Todos los cubos ahora experimentan una traslación en el eje z.
+-   By: A.L.
