@@ -129,31 +129,38 @@ class Window:
 
 
 class Shader:
-    def __init__(self):        
+    def __init__(self, cubes):        
         self.shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
         # Vertex Buffer Object
         VBO = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, VBO)
-        glBufferData(GL_ARRAY_BUFFER, main_cube.vertices.nbytes, main_cube.vertices, GL_STATIC_DRAW)
+        for cube in cubes:
+            glBufferData(GL_ARRAY_BUFFER, cube.vertices.nbytes, cube.vertices, GL_STATIC_DRAW)
 
         # Element Buffer Object
         EBO = glGenBuffers(1)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, main_cube.indices.nbytes, main_cube.indices, GL_STATIC_DRAW)
+        for cube in cubes:
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.indices.nbytes, cube.indices, GL_STATIC_DRAW)
 
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, main_cube.vertices.itemsize * 5, ctypes.c_void_p(0))
+        for cube in cubes:
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, cube.vertices.itemsize * 5, ctypes.c_void_p(0))
 
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, main_cube.vertices.itemsize * 5, ctypes.c_void_p(12))
+        for cube in cubes:
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, cube.vertices.itemsize * 5, ctypes.c_void_p(12))
 
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
-main_cube = Cube()
-main_shader = Shader()
 
-main_cube.load_texture(1)
+my_cubes = [0]*3
+for i in range(3):
+    my_cubes[i] = Cube()
+    my_cubes[i].load_texture(1)
+
+main_shader = Shader(my_cubes)
 
 glUseProgram(main_shader.shader)
 glClearColor(0, 0.1, 0.1, 1)
@@ -162,7 +169,11 @@ glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
-translation = pyrr.matrix44.create_from_translation(pyrr.Vector3([1, 0, -3]))
+
+cubes_translation = [0]*3 
+cubes_translation[0] = pyrr.matrix44.create_from_translation(pyrr.Vector3([1.0, 0.0, -10.0]))
+cubes_translation[1] = pyrr.matrix44.create_from_translation(pyrr.Vector3([-1, 0, -10]))
+cubes_translation[2] = pyrr.matrix44.create_from_translation(pyrr.Vector3([0, 1, -15]))
 
 model_loc = glGetUniformLocation(main_shader.shader, "model")
 proj_loc = glGetUniformLocation(main_shader.shader, "projection")
@@ -180,10 +191,18 @@ def main():
         rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
 
         rotation = pyrr.matrix44.multiply(rot_x, rot_y)
-        model = pyrr.matrix44.multiply(rotation, translation)
 
+        model = pyrr.matrix44.multiply(rotation, cubes_translation[0])
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+        glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+        #cubes_translation[0] += pyrr.matrix44.create_from_translation(pyrr.Vector3([0.0, 0.0, -0.1]))
 
+        model = pyrr.matrix44.multiply(rotation, cubes_translation[1])
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+        glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+
+        model = pyrr.matrix44.multiply(rotation, cubes_translation[2])
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
         glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
 
         glfw.swap_buffers(main_window.win)
