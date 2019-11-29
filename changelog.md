@@ -53,3 +53,8 @@
 -   Eliminación temporal de la rotación.
 -   Todos los cubos ahora experimentan una traslación en el eje z.
 -   By: A.L.
+
+## Versión 1.0.10b:
+-   Agregada un poco de documentación.
+-   Pendiente de corregir el bug de superposición de texturas.
+-   By: A.L.

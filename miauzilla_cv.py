@@ -7,7 +7,7 @@ import pyrr
 import random
 from PIL import Image
 
-
+# Esta variable realiza el manejo de la posición y la textura de cualquier objeto gráfico que sea creado con el shader program
 vertex_src = """
 #version 310 es
 
@@ -17,7 +17,7 @@ layout(location = 1) in vec2 a_texture;
 uniform mat4 model; //combined translation and rotation
 uniform mat4 projection;
 
-out vec3 v_color;
+//out vec3 v_color;
 out vec2 v_texture;
 
 void main(){
@@ -26,6 +26,7 @@ void main(){
 }
 """
 
+# Esta variable "encapsula" la textura (imagen) que se desea usar con el tipo de textura a usar (2D en este caso), y retorna una textura 2D con la textura (imagen) deseada.
 fragment_src = """
 #version 310 es
 
@@ -33,12 +34,12 @@ precision mediump float;
 
 in vec2 v_texture; 
 
-out vec4 out_color;
+out vec4 out_texture;
 
 uniform sampler2D s_texture;
 
 void main(){
-    out_color = texture(s_texture, v_texture);
+    out_texture = texture(s_texture, v_texture);
 }
 """
 
@@ -84,6 +85,7 @@ indices =  [0,  1,  2,  2,  3,  0,
 
 class Cube:
     def __init__(self):
+        # Conversión de array a np array, para los vértices e índices.
         self.vertices = np.array(vertices, dtype=np.float32)
         self.indices = np.array(indices, dtype=np.uint32)
         self.id_texture = 0
@@ -159,7 +161,7 @@ main_window = Window(1080, 720, "Miauzilla")
 my_cubes = [0]*30
 for i in range(30):
     my_cubes[i] = Cube()
-    my_cubes[i].load_texture(1)
+    my_cubes[i].load_texture(0) # TODO: Corregir la superposición de texturas.
 
 main_shader = Shader(my_cubes)
 
