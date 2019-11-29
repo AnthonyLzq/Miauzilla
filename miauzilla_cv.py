@@ -162,12 +162,22 @@ class Shader:
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
 
-my_cubes = [0]*30
-for i in range(30):
+#Seteando cantidad de cubos obstaculos
+n = 30
+
+my_cubes = [0]*(n+1)
+for i in range(n):
     my_cubes[i] = Cube()
     my_cubes[i].load_texture(random.randint(0, 1))
 
+
+#Creando el cubo principal que será el personaje
+my_cubes[n] = Cube()
+my_cubes[n].load_texture(1)
+
+#Iniciando los Shaders de my_cubes
 main_shader = Shader(my_cubes)
+
 
 glUseProgram(main_shader.shader)
 glClearColor(0, 0.1, 0.1, 1)
@@ -176,17 +186,21 @@ glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
-
-initial_cube_position = [0]*30
-for i in range(30):
+initial_cube_position = [0]*(n+1)
+for i in range(n):
     initial_cube_position[i] = pyrr.Vector3([
                         random.randrange(-5.0, 5.0), 
                         0.0, 
                         random.randrange(-100, -40)])
 
+#Seteando las posicion del pj
+initial_cube_position[n] = pyrr.Vector3([
+                        0.0, 
+                        0.0, 
+                        -4.0])
 
-matrix_cube_translation = [0]*30
-for i in range(30):
+matrix_cube_translation = [0]*(n+1)
+for i in range(n+1):
     matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(initial_cube_position[i])
 
 # eye, target, up
@@ -210,8 +224,10 @@ def main():
         rot_y = pyrr.Matrix44.from_y_rotation(0.5*glfw.get_time())
         rotation = 1#pyrr.matrix44.multiply(rot_x, rot_y)
 
-        for i in range(30):
-            initial_cube_position[i] += translate_cube_z
+        for i in range(n+1):
+
+            if i != n:
+                initial_cube_position[i] += translate_cube_z
             model = pyrr.matrix44.multiply(rotation, matrix_cube_translation[i])
             glBindTexture(GL_TEXTURE_2D, my_cubes[i].id_texture)
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)

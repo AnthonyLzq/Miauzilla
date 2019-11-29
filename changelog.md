@@ -64,3 +64,8 @@
 -   Corregido el bug de superposición de texturas.
 -   Añadiendo texturas de forma aleatoria a los cubos que se acercan hacia la cámara.
 -   By: A.L.
+
+## Versión 1.0.12:
+-   Se agregó el objeto que representará al gato.
+-   Se configuró para que el gato no se desplace a comparacion de los demás.
+-   By: E.D.
