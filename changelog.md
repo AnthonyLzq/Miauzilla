@@ -75,3 +75,7 @@
 -   Eliminación definitiva de la rotación de cubos.
 -   Ilusión de movimiento perpetuo de los _obstáculos_ que el personaje principal debe evitar. Una vez que pasan el sistema de referencia de la cámara se redibujan.
 -   By: A.L.
+
+## Versión 1.0.13b:
+-   Arreglando _.gitignore_ y eliminando archivos innecesarios.
+-   Arreglando _changelog.md_ y especificando lo siguiente, todas las versiones sin número son por defecto versiones **a**.
