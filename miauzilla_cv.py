@@ -220,11 +220,8 @@ class Window:
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
     def key_event(self, window, key, scancode, action, mods):
-        """ Handle keyboard events
-            Note: It's not important to understand how this works just yet.
-            Keyboard and mouse inputs are covered in Tutorial 6
-        """
-        global view
+        global view, n, m, cube_position
+
         if action == glfw.PRESS and key == glfw.KEY_Q:
             if self.mode_perspective == 0:
                 view = pyrr.matrix44.create_look_at(pyrr.Vector3([10, 8, 3]), pyrr.Vector3([0, 1.5, 0]), pyrr.Vector3([0, 1, 0]))
@@ -235,6 +232,15 @@ class Window:
             else:
                 view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, -1]), pyrr.Vector3([0, 1, 0]))
                 self.mode_perspective = 0
+
+        if action == glfw.PRESS and key == glfw.KEY_A:
+            translate_cube_x = pyrr.Vector3([-0.5, 0.0, 0.0])
+            for i in range(m):
+                cube_position[n+i] += translate_cube_x
+        elif action == glfw.PRESS and key == glfw.KEY_D:
+            translate_cube_x = pyrr.Vector3([+0.5, 0.0, 0.0])
+            for i in range(m):
+                cube_position[n+i] += translate_cube_x
 
 
 

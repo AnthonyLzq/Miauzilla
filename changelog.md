@@ -105,3 +105,10 @@
     -   **ESC**: salir.
     -   **Q**: rotar cámara.
 - By: A.L.
+
+## Versión 1.1.2:
+-   Agregados eventos de teclado, tecla **A** y tecla **D**:
+    -   **A**: mover hacia la izquierda.
+    -   **D**: mover hacia la derecha.
+-   Pendiente de arreglar que el objeto gato no llega a mover su cabeza.
+- By: A.L.
