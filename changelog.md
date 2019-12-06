@@ -99,3 +99,9 @@
 -   Se renderiza el objeto gato usando cubos de diferentes tamaños.
 -   Se implementan las escalas para los obstáculos.
 -   By: E.S. 
+
+## Versión 1.1.1:
+-   Agregados eventos de teclado, tecla **ESC** y tecla **Q**:
+    -   **ESC**: salir.
+    -   **Q**: rotar cámara.
+- By: A.L.

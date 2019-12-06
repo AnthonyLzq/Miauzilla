@@ -16,12 +16,13 @@ layout(location = 1) in vec2 a_texture;
 
 uniform mat4 model; //translation
 uniform mat4 projection;
+uniform mat4 view;
 
 //out vec3 v_color;
 out vec2 v_texture;
 
 void main(){
-    gl_Position = projection * model * vec4(a_position, 1.0);
+    gl_Position = projection * view *model * vec4(a_position, 1.0);
     v_texture = a_texture;
 }
 """
@@ -44,10 +45,10 @@ void main(){
 """
 
 quad_vertices = [#Vertices                #Texture
-                -100.0, -10.0,  20.0,      0.0, 0.0,
-                 100.0, -10.0,  20.0,      1.0, 0.0,
-                 100.0, -10.0,  -10000,    1.0, 1.0,
-                -100.0, -10.0,  -10000,    0.0, 1.0]
+                -10.0, -0.5,  20.0,      0.0, 0.0,
+                 10.0, -0.5,  20.0,      1.0, 0.0,
+                 10.0, -0.5,  -10000,    1.0, 1.0,
+                -10.0, -0.5,  -10000,    0.0, 1.0]
 
 
 quad_indices = [0, 1, 2, 2, 3, 0]
@@ -104,30 +105,31 @@ n = 30
 
 # Seteando las pos del los cubos que conforman el gato
 gato = [[0, 0.5, -4.5], #cuerpo1/2
- [0, 0.5, -3.5], #cuerpo2/2
- [0, 0.5, -2.5], #cola1/3
- [0, 0.5, -1.5], #cola2/3
- [0, 0.5, -0.5], #cola2/3
- [0, 1, -5], #cabeza1/2
- [0, 1, -5.5], #cabeza2/2
- [0.25, 0, -3.25], #pierna trasera derecha
- [-0.25, 0, -3.25], #pierna trasera izquierda
- [0.25, 0, -4.75], #pierna delantera derecha
- [-0.25, 0, -4.75] #pierna delantera izquierda
- ] #Fin de las pos de los cubos
+        [0, 0.5, -3.5], #cuerpo2/2 
+        [0, 0.5, -2.5], #cola1/3
+        [0, 0.5, -1.5], #cola2/3
+        [0, 0.5, -0.5], #cola2/3
+        [0, 1, -5], #cabeza1/2
+        [0, 1, -5.5], #cabeza2/2    
+        [0.25, 0, -3.25], #pierna trasera derecha
+        [-0.25, 0, -3.25], #pierna trasera izquierda
+        [0.25, 0, -4.75], #pierna delantera derecha
+        [-0.25, 0, -4.75] #pierna delantera izquierda
+] #Fin de las pos de los cubos
 
-gato_escala = [[1, 1, 1], #cuerpo1/2
- [1, 1, 1], #cuerpo2/2
- [0.5, 0.5, 1], #cola1/3
- [0.5, 0.5, 1], #cola2/3
- [0.5, 0.5, 1], #cola2/3
- [1, 1, 1], #cabeza1/2
- [0.5, 0.5, 0.5], #cabeza2/2
- [0.25, 1, 0.25], #pierna trasera derecha
- [0.25, 1, 0.25], #pierna trasera izquierda
- [0.25, 1, 0.25], #pierna delantera derecha
- [0.25, 1, 0.25] #pierna delantera izquierda
- ] #Fin de las pos de los cubos
+gato_escala = [
+                [1, 1, 1], #cuerpo1/2
+                [1, 1, 1], #cuerpo2/2
+                [0.5, 0.5, 1], #cola1/3
+                [0.3, 0.3, 1], #cola2/3
+                [0.2, 0.2, 1], #cola2/3
+                [1, 1, 1], #cabeza1/2
+                [0.5, 0.5, 0.5], #cabeza2/2
+                [0.25, 1, 0.25], #pierna trasera derecha
+                [0.25, 1, 0.25], #pierna trasera izquierda
+                [0.25, 1, 0.25], #pierna delantera derecha
+                [0.25, 1, 0.25] #pierna delantera izquierda
+] #Fin de las pos de los cubos
 
 # Seteando cantidad de cubos que conformar el gato principal
 m = len(gato)
@@ -201,20 +203,39 @@ class Window:
             raise Exception("glfw can not be initilized")
 
         self.win = glfw.create_window(width, height, title, None, None)
+        self.mode_perspective = 0
 
         if not self.win:
             glfw.terminate()
             raise Exception("glfw can not be created!")
 
         glfw.set_window_pos(self.win, 400, 200)
-        glfw.set_window_size_callback(self.win, self.window_resize)
         glfw.make_context_current(self.win)
+        glfw.set_window_size_callback(self.win, self.window_resize)
 
     def window_resize(self, window, width, height):
         glViewport(0, 0, width, height)
         projection = pyrr.matrix44.create_perspective_projection_matrix(45, width/height, 0.1, 1000)
         # translation = pyrr.matrix44.create_from_translation([0.0, 0.1, 0.0])
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
+
+    def key_event(self, window, key, scancode, action, mods):
+        """ Handle keyboard events
+            Note: It's not important to understand how this works just yet.
+            Keyboard and mouse inputs are covered in Tutorial 6
+        """
+        global view
+        if action == glfw.PRESS and key == glfw.KEY_Q:
+            if self.mode_perspective == 0:
+                view = pyrr.matrix44.create_look_at(pyrr.Vector3([10, 8, 3]), pyrr.Vector3([0, 1.5, 0]), pyrr.Vector3([0, 1, 0]))
+                self.mode_perspective += 1
+            elif self.mode_perspective == 1:
+                view = pyrr.matrix44.create_look_at(pyrr.Vector3([-10, 8, 3]), pyrr.Vector3([0, 1.5, 0]), pyrr.Vector3([0, 1, 0]))
+                self.mode_perspective += 1
+            else:
+                view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, -1]), pyrr.Vector3([0, 1, 0]))
+                self.mode_perspective = 0
+
 
 
 class Shader:
@@ -319,9 +340,7 @@ cube_position = [0]*(n+m)
 for i in range(n):
     # Initializing the positions of the cubes
     cube_position[i] = pyrr.Vector3([
-                        random.randrange(-5.0, 5.0), 
-                        0.0, 
-                        random.randrange(-100, -40)])
+                        random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
 
 for i in range(m):
     # Seteando las posicion del gato principal
@@ -334,23 +353,31 @@ for i in range(n+m):
     matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
 
 # eye, target, up
-# view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 0, 3]), pyrr.Vector3([0, 0, 0]), pyrr.Vector3([0, 1, 0]))
+# view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, 0]), pyrr.Vector3([0, 1, 0]))
+view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, -1]), pyrr.Vector3([0, 1, 0]))
 
 model_loc = glGetUniformLocation(main_shader.shader, "model")
 proj_loc = glGetUniformLocation(main_shader.shader, "projection")
 view_loc = glGetUniformLocation(main_shader.shader, "view")
 
-glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
+# glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 # glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
 def main():
+    global view
     translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
+    
+    glfw.set_input_mode(main_window.win, glfw.STICKY_KEYS,GL_TRUE) 
+	# Enable key event callback
+    glfw.set_key_callback(main_window.win, main_window.key_event)
 
     # The main aplication loop
-    while not glfw.window_should_close(main_window.win):
+    while glfw.get_key(main_window.win,glfw.KEY_ESCAPE) != glfw.PRESS and not glfw.window_should_close(main_window.win):
+
         glfw.poll_events()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
         # Drawing the ground
         model = matrix_ground_position
         glBindVertexArray(main_shader.quad_VAO)
@@ -363,7 +390,7 @@ def main():
             if i < n:
                 cube_position[i] += translate_cube_z
                 if cube_position[i][2] >= 0.0:
-                    cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 0.0, random.randrange(-100, -40)])
+                    cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
                 #Escala de todos los objetos que son obstaculos
                 escala = pyrr.matrix44.create_from_scale([1,4,1])
             else:
