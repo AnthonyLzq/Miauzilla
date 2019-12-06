@@ -6,6 +6,7 @@ import numpy as np
 import pyrr
 import random
 from PIL import Image
+import os
 
 # Esta variable realiza el manejo de la posición y la textura de cualquier objeto gráfico que sea creado con el shader program
 vertex_src = """
@@ -101,7 +102,7 @@ texture_surface = [
                 Image.open('./textures/03-ground.png')]
 
 # Seteando cantidad de cubos obstaculos
-n = 30
+n = 3
 
 # Seteando las pos del los cubos que conforman el gato
 gato = [[0, 0.5, -4.5], #cuerpo1/2
@@ -109,7 +110,7 @@ gato = [[0, 0.5, -4.5], #cuerpo1/2
         [0, 0.5, -2.5], #cola1/3
         [0, 0.5, -1.5], #cola2/3
         [0, 0.5, -0.5], #cola2/3
-        [0, 1, -5], #cabeza1/2
+        [0.0, 1.0, -5.0], #cabeza1/2
         [0, 1, -5.5], #cabeza2/2    
         [0.25, 0, -3.25], #pierna trasera derecha
         [-0.25, 0, -3.25], #pierna trasera izquierda
@@ -369,8 +370,10 @@ view_loc = glGetUniformLocation(main_shader.shader, "view")
 # glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 # glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
 
+#Iniciando el puntaje:
+puntaje = 0
 def main():
-    global view
+    global view,puntaje
     translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
     
     glfw.set_input_mode(main_window.win, glfw.STICKY_KEYS,GL_TRUE) 
@@ -411,6 +414,14 @@ def main():
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
             glDrawElements(GL_TRIANGLES, len(cube_indices), GL_UNSIGNED_INT, None)
             matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
+        for i in range(m):
+            for j in range(n):
+                #Condicion para que exista un choque
+                if abs(cube_position[i+n][2] - cube_position[j][2]) < .1 and abs(cube_position[i+n][0] - cube_position[j][0]) < 1:
+                    cube_position[j] = pyrr.Vector3([random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
+                    puntaje+=1
+                    os.system("clear")
+                    print("Tu puntaje actual es: ",puntaje)
 
         glfw.swap_buffers(main_window.win)
 

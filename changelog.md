@@ -112,3 +112,10 @@
     -   **D**: mover hacia la derecha.
 -   Pendiente de arreglar que el objeto gato no llega a mover su cabeza.
 - By: A.L.
+
+## Versión 1.1.2
+-   Agregados los choques entre el gato y los edificios.
+-   Reparado el bug del desplazamiento del gato.
+-   Agregado la reubicacion de los edificios al fondo.
+-   Agregado el contador de cuantos edificios ha destruido.
+-   By: E.S.
