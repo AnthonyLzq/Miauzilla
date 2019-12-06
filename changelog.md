@@ -126,3 +126,8 @@
 -   Importada la librería _pygame_ para implementar los sonidos.
 -   Implementado sonido de fondo y sonido de choques.
 -   By: A.L.
+
+## Versión 1.2.0:
+-   Implementación de sombras, se utiliza un evento de teclado, la letra **E**, para cambiar el tipo de iluminación.
+-   Implementación de movimiento a partir de las teclas direccionales, además de **A**, **W**, **D** y **S**.
+-   By: A.L.

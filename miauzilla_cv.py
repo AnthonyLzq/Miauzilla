@@ -13,19 +13,23 @@ import os
 vertex_src = """
 #version 310 es
 
+precision mediump float;
+
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec2 a_texture;
+layout(location = 2) in vec3 a_normal;
 
 uniform mat4 model; //translation
 uniform mat4 projection;
 uniform mat4 view;
 
-//out vec3 v_color;
+out vec3 v_normal;
 out vec2 v_texture;
 
 void main(){
-    gl_Position = projection * view *model * vec4(a_position, 1.0);
+    v_normal = normalize((model * vec4(floor(a_normal), 0)).xyz);
     v_texture = a_texture;
+    gl_Position = projection * view * model * vec4(a_position, 1.0);
 }
 """
 
@@ -36,56 +40,64 @@ fragment_src = """
 precision mediump float;
 
 in vec2 v_texture; 
+in vec3 v_normal;
 
 out vec4 out_texture;
 
+uniform vec3 light_direction;
 uniform sampler2D s_texture;
 
 void main(){
-    out_texture = texture(s_texture, v_texture);
+    //vec3 light_direction = (0.0f, 0.0f, 0.1f);
+    float diffuse = max(dot(v_normal, light_direction), 0.0);
+    float ambient = 0.3;
+    float lighting = max(diffuse, ambient);
+    
+    vec4 sample1 = texture2D(s_texture, v_texture);
+    out_texture = vec4(sample1.xyz * lighting, sample1.a);
 }
 """
 
 quad_vertices = [#Vertices                #Texture
-                -10.0, -0.5,  20.0,      0.0, 0.0,
-                 10.0, -0.5,  20.0,      1.0, 0.0,
-                 10.0, -0.5,  -10000,    1.0, 1.0,
-                -10.0, -0.5,  -10000,    0.0, 1.0]
+                -10.0, -0.5,  20.0,      0.0, 0.0,      0.0,  1.0,  0.0,  
+                 10.0, -0.5,  20.0,      1.0, 0.0,      0.0,  1.0,  0.0,
+                 10.0, -0.5,  -10000,    1.0, 1.0,      0.0,  1.0,  0.0,
+                -10.0, -0.5,  -10000,    0.0, 1.0,      0.0,  1.0,  0.0]
 
 
 quad_indices = [0, 1, 2, 2, 3, 0]
 
 
-cube_vertices = [#Vertices         #Texture
-                -0.5, -0.5,  0.5,  0.0, 0.0,
-                 0.5, -0.5,  0.5,  1.0, 0.0,
-                 0.5,  0.5,  0.5,  1.0, 1.0,
-                -0.5,  0.5,  0.5,  0.0, 1.0,
+cube_vertices = [#Vertices         #Texture     #Light
+                -0.5, -0.5,  0.5,  0.0, 0.0,     0.0,  0.0,  1.0,  
+                 0.5, -0.5,  0.5,  1.0, 0.0,     0.0,  0.0,  1.0,  
+                 0.5,  0.5,  0.5,  1.0, 1.0,     0.0,  0.0,  1.0,  
+                -0.5,  0.5,  0.5,  0.0, 1.0,     0.0,  0.0,  1.0,  
 
-                -0.5, -0.5, -0.5,  0.0, 0.0,
-                 0.5, -0.5, -0.5,  1.0, 0.0,
-                 0.5,  0.5, -0.5,  1.0, 1.0,
-                -0.5,  0.5, -0.5,  0.0, 1.0,
+                -0.5, -0.5, -0.5,  0.0, 0.0,     0.0,  0.0, -1.0,
+                 0.5, -0.5, -0.5,  1.0, 0.0,     0.0,  0.0, -1.0,
+                 0.5,  0.5, -0.5,  1.0, 1.0,     0.0,  0.0, -1.0,
+                -0.5,  0.5, -0.5,  0.0, 1.0,     0.0,  0.0, -1.0,
 
-                 0.5, -0.5, -0.5,  0.0, 0.0,
-                 0.5,  0.5, -0.5,  1.0, 0.0,
-                 0.5,  0.5,  0.5,  1.0, 1.0,
-                 0.5, -0.5,  0.5,  0.0, 1.0,
+                 0.5, -0.5, -0.5,  0.0, 0.0,     1.0,  0.0, -1.0,
+                 0.5,  0.5, -0.5,  1.0, 0.0,     1.0,  0.0, -1.0,
+                 0.5,  0.5,  0.5,  1.0, 1.0,     1.0,  0.0, -1.0,
+                 0.5, -0.5,  0.5,  0.0, 1.0,     1.0,  0.0, -1.0,
 
-                -0.5,  0.5, -0.5,  0.0, 0.0,
-                -0.5, -0.5, -0.5,  1.0, 0.0,
-                -0.5, -0.5,  0.5,  1.0, 1.0,
-                -0.5,  0.5,  0.5,  0.0, 1.0,
+                -0.5,  0.5, -0.5,  0.0, 0.0,    -1.0,  0.0,  0.0,
+                -0.5, -0.5, -0.5,  1.0, 0.0,    -1.0,  0.0,  0.0,
+                -0.5, -0.5,  0.5,  1.0, 1.0,    -1.0,  0.0,  0.0,
+                -0.5,  0.5,  0.5,  0.0, 1.0,    -1.0,  0.0,  0.0,
 
-                -0.5, -0.5, -0.5,  0.0, 0.0,
-                 0.5, -0.5, -0.5,  1.0, 0.0,
-                 0.5, -0.5,  0.5,  1.0, 1.0,
-                -0.5, -0.5,  0.5,  0.0, 1.0,
+                -0.5, -0.5, -0.5,  0.0, 0.0,     0.0, -1.0, -1.0,
+                 0.5, -0.5, -0.5,  1.0, 0.0,     0.0, -1.0, -1.0,
+                 0.5, -0.5,  0.5,  1.0, 1.0,     0.0, -1.0, -1.0,
+                -0.5, -0.5,  0.5,  0.0, 1.0,     0.0, -1.0, -1.0,
 
-                 0.5,  0.5, -0.5,  0.0, 0.0,
-                -0.5,  0.5, -0.5,  1.0, 0.0,
-                -0.5,  0.5,  0.5,  1.0, 1.0,
-                 0.5,  0.5,  0.5,  0.0, 1.0]
+                 0.5,  0.5, -0.5,  0.0, 0.0,     0.0,  1.0, -1.0,
+                -0.5,  0.5, -0.5,  1.0, 0.0,     0.0,  1.0, -1.0,
+                -0.5,  0.5,  0.5,  1.0, 1.0,     0.0,  1.0, -1.0,
+                 0.5,  0.5,  0.5,  0.0, 1.0,     0.0,  1.0, -1.0]
             
 
 cube_indices =  [0,  1,  2,  2,  3,  0,
@@ -97,8 +109,8 @@ cube_indices =  [0,  1,  2,  2,  3,  0,
 
 # List that stores textures
 texture_surface = [  
-                Image.open('./textures/cat.png'), 
-                Image.open('./textures/ursa.png'),
+                Image.open('./textures/02-obstacle.png'), 
+                Image.open('./textures/02-obstacle-2.png'),
                 Image.open('./textures/01-character.png'),
                 Image.open('./textures/03-ground.png'),
                 Image.open('./textures/04-sky.png')]
@@ -107,31 +119,31 @@ texture_surface = [
 n = 35
 
 # Seteando las pos del los cubos que conforman el gato
-gato = [[0, 0.5, -4.5], #cuerpo1/2
-        [0, 0.5, -3.5], #cuerpo2/2 
-        [0, 0.5, -2.5], #cola1/3
-        [0, 0.5, -1.5], #cola2/3
-        [0, 0.5, -0.5], #cola2/3
+gato = [[0.0, 0.5, -4.5], #cuerpo1/2
+        [0.0, 0.5, -3.5], #cuerpo2/2 
+        [0.0, 0.5, -2.5], #cola1/3
+        [0.0, 0.5, -1.5], #cola2/3
+        [0.0, 0.5, -0.5], #cola2/3
         [0.0, 1.0, -5.0], #cabeza1/2
-        [0, 1, -5.5], #cabeza2/2    
-        [0.25, 0, -3.25], #pierna trasera derecha
-        [-0.25, 0, -3.25], #pierna trasera izquierda
-        [0.25, 0, -4.75], #pierna delantera derecha
-        [-0.25, 0, -4.75] #pierna delantera izquierda
+        [0.0, 1, -5.5], #cabeza2/2    
+        [0.25, 0.0, -3.25], #pierna trasera derecha
+        [-0.25, 0.0, -3.25], #pierna trasera izquierda
+        [0.25, 0.0, -4.75], #pierna delantera derecha
+        [-0.25, 0.0, -4.75] #pierna delantera izquierda
 ] #Fin de las pos de los cubos
 
 gato_escala = [
-                [1, 1, 1], #cuerpo1/2
-                [1, 1, 1], #cuerpo2/2
-                [0.5, 0.5, 1], #cola1/3
-                [0.3, 0.3, 1], #cola2/3
-                [0.2, 0.2, 1], #cola2/3
-                [1, 1, 1], #cabeza1/2
+                [1.0, 1.0, 1.0], #cuerpo1/2
+                [1.0, 1.0, 1.0], #cuerpo2/2
+                [0.5, 0.5, 1.0], #cola1/3
+                [0.3, 0.3, 1.0], #cola2/3
+                [0.2, 0.2, 1.0], #cola2/3
+                [1.0, 1.0, 1.0], #cabeza1/2
                 [0.5, 0.5, 0.5], #cabeza2/2
-                [0.25, 1, 0.25], #pierna trasera derecha
-                [0.25, 1, 0.25], #pierna trasera izquierda
-                [0.25, 1, 0.25], #pierna delantera derecha
-                [0.25, 1, 0.25] #pierna delantera izquierda
+                [0.25, 1.0, 0.25], #pierna trasera derecha
+                [0.25, 1.0, 0.25], #pierna trasera izquierda
+                [0.25, 1.0, 0.25], #pierna delantera derecha
+                [0.25, 1.0, 0.25] #pierna delantera izquierda
 ] #Fin de las pos de los cubos
 
 # Seteando cantidad de cubos que conformar el gato principal
@@ -207,6 +219,7 @@ class Window:
 
         self.win = glfw.create_window(width, height, title, None, None)
         self.mode_perspective = 0
+        self.light_perspective = 0
 
         if not self.win:
             glfw.terminate()
@@ -236,15 +249,35 @@ class Window:
                 view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, -1]), pyrr.Vector3([0, 1, 0]))
                 self.mode_perspective = 0
 
-        if action == glfw.PRESS and key == glfw.KEY_A:
+        if action == glfw.PRESS and key == glfw.KEY_E:
+            global aux
+            if self.mode_perspective == 0:
+                glUniform3f(aux, 0.0, 0.0, 1.0)
+                self.mode_perspective += 1
+            elif self.mode_perspective == 1:
+                glUniform3f(aux, 0.0, 1.0, 0.0)
+                self.mode_perspective += 1
+            elif self.mode_perspective == 2:
+                glUniform3f(aux, 1.0, 0.0, 0.0)
+                self.mode_perspective = 0
+
+
+        if action == glfw.PRESS and (key == glfw.KEY_A or key == glfw.KEY_LEFT):
             translate_cube_x = pyrr.Vector3([-0.5, 0.0, 0.0])
             for i in range(m):
                 cube_position[n+i] += translate_cube_x
-        elif action == glfw.PRESS and key == glfw.KEY_D:
+        elif action == glfw.PRESS and (key == glfw.KEY_D or key == glfw.KEY_RIGHT):
             translate_cube_x = pyrr.Vector3([+0.5, 0.0, 0.0])
             for i in range(m):
                 cube_position[n+i] += translate_cube_x
-
+        elif action == glfw.PRESS and (key == glfw.KEY_S or key == glfw.KEY_DOWN):
+            translate_cube_z = pyrr.Vector3([0.0, 0.0, +0.5])
+            for i in range(m):
+                cube_position[n+i] += translate_cube_z
+        elif action == glfw.PRESS and (key == glfw.KEY_W or key == glfw.KEY_UP):
+            translate_cube_z = pyrr.Vector3([0.0, 0.0, -0.5])
+            for i in range(m):
+                cube_position[n+i] += translate_cube_z
 
 
 class Shader:
@@ -280,10 +313,13 @@ class Shader:
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.cube_indices.nbytes, cube.cube_indices, GL_STATIC_DRAW)
 
             glEnableVertexAttribArray(0)
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 5, ctypes.c_void_p(0))
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 8, ctypes.c_void_p(0))
 
             glEnableVertexAttribArray(1)
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 5, ctypes.c_void_p(12))
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 8, ctypes.c_void_p(12))
+
+            glEnableVertexAttribArray(2)
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 8, ctypes.c_void_p(20))
 
     def vinculate_ground(self, quad):
         # Quad VAO
@@ -301,10 +337,13 @@ class Shader:
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
 
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(0))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(0))
 
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(12))
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(12))
+
+        glEnableVertexAttribArray(2)
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(20))
 
     def vinculate_sky(self, quad):
         # Quad VAO
@@ -322,10 +361,13 @@ class Shader:
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
 
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(0))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(0))
 
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(12))
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(12))
+
+        glEnableVertexAttribArray(2)
+        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(20))
 
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
@@ -335,6 +377,7 @@ for i in range(n+m):
     if i < n:
         my_cubes[i] = Cube()
         my_cubes[i].load_texture(random.randint(0, 1))
+        # my_cubes[i].load_texture(0)
     else:
         # Creando el cubo principal que será el gato
         my_cubes[i] = Cube()
@@ -356,6 +399,9 @@ main_shader.vinculate_sky(sky)
 
 
 glUseProgram(main_shader.shader)
+aux = glGetUniformLocation(main_shader.shader, "light_direction")
+# main_shader.shader["light_direction"].SetValue(pyrr.Vector3([0,0,1]))
+
 glClearColor(0, 0.1, 0.1, 1)
 glEnable(GL_DEPTH_TEST)
 glEnable(GL_BLEND)
@@ -436,7 +482,7 @@ def main():
             # We will translate every object, except the main character
             if i < n:
                 cube_position[i] += translate_cube_z
-                if cube_position[i][2] >= 0.0:
+                if cube_position[i][2] >= 20.0:
                     cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
                 #Escala de todos los objetos que son obstaculos
                 escala = pyrr.matrix44.create_from_scale([1,4,1])
@@ -445,7 +491,7 @@ def main():
                 escala = pyrr.matrix44.create_from_scale(gato_escala[i-n])
             
             #Hallando el model resultante al multiplicar la escala y la translacion
-            model = np.dot(escala,matrix_cube_translation[i])
+            model = np.dot(escala, matrix_cube_translation[i])
 
             glBindVertexArray(main_shader.cube_VAO[i])
             glBindTexture(GL_TEXTURE_2D, my_cubes[i].id_texture)
