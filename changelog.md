@@ -60,7 +60,7 @@
 -   By: A.L.
 
 ## Versión 1.0.11:
--   Agregado una lista que almacena las texturas `textureSurface` y otra que almacena las texturas transformadas a bytes `textureData`.
+-   Agregado una lista que almacena las texturas `textureSurface` y otra que alse encarga demacena las texturas transformadas a bytes `textureData`.
 -   Corregido el bug de superposición de texturas.
 -   Añadiendo texturas de forma aleatoria a los cubos que se acercan hacia la cámara.
 -   By: A.L.
@@ -78,4 +78,19 @@
 
 ## Versión 1.0.13b:
 -   Arreglando _.gitignore_ y eliminando archivos innecesarios.
--   Arreglando _changelog.md_ y especificando lo siguiente, todas las versiones sin número son por defecto versiones **a**.
+-   Arreglando _changelog.md_ y especificando lo siguieglBindVertexArraynte, todas las versiones sin número son por defecto versiones **a**.
+-   By: A.L.
+
+## Versión 1.0.14:
+-   Agregadas texturas nuevas a _textures_.
+-   Agregadas nuevas constantes:
+    -   `quad_vertices`, `quad_indices`.
+-   Modificadas las siguientes constantes:glBindVertexArray
+    -   `vertices` a `cube_vertices`.
+    -   `indices` a `cube_indices`.
+-   Modificada la forma en cómo se establecía la textura.
+-   Modificada la clase _Shader_ para poder usar VBO y poder dibujar más de una sola figura. Por cada nueva figura que se pretenda dibujar se tendrá que usar una nueva función _vinculate_.
+-   Modificada la perspectiva para renderizar adecuadamente el suelo.
+-   El dibujo se hace utilizando `glBindVertexArray`.
+-   Dejando de monitoriar la carpeta __\_\_pycache\_\___.
+-   By: A.L.
