@@ -6,6 +6,7 @@ This is supposed to be our project, 'Miauzilla'. It will be a _endless runner ga
 You must have installed the following modules:
 
     -   PyOpenGl
+    -   pygame
     -   glfw
     -   numpy
     -   pyrr
@@ -14,6 +15,7 @@ If you haven't already installed them, you can do so by executing the following 
 
 ```
 $ sudo pip install PyOpenGL
+$ sudo pip install pygame
 $ sudo pip install glfw
 $ sudo pip install numpy
 $ sudo pip install pyrr

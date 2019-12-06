@@ -5,6 +5,7 @@ from OpenGL.GL.shaders import compileProgram, compileShader
 import numpy as np
 import pyrr
 import random
+import pygame
 from PIL import Image
 import os
 
@@ -99,10 +100,11 @@ texture_surface = [
                 Image.open('./textures/cat.png'), 
                 Image.open('./textures/ursa.png'),
                 Image.open('./textures/01-character.png'),
-                Image.open('./textures/03-ground.png')]
+                Image.open('./textures/03-ground.png'),
+                Image.open('./textures/04-sky.png')]
 
 # Seteando cantidad de cubos obstaculos
-n = 3
+n = 35
 
 # Seteando las pos del los cubos que conforman el gato
 gato = [[0, 0.5, -4.5], #cuerpo1/2
@@ -283,21 +285,19 @@ class Shader:
             glEnableVertexAttribArray(1)
             glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 5, ctypes.c_void_p(12))
 
-            # glBindVertexArray(0)
-    
-    def vinculate_quads(self, quad):
+    def vinculate_ground(self, quad):
         # Quad VAO
-        self.quad_VAO = glGenVertexArrays(1)
-        glBindVertexArray(self.quad_VAO)
+        self.quad_VAO_g = glGenVertexArrays(1)
+        glBindVertexArray(self.quad_VAO_g)
 
         # Quad Vertex Buffer Object
-        self.quad_VBO = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO)
+        self.quad_VBO_g = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO_g)
         glBufferData(GL_ARRAY_BUFFER, quad.quad_vertices.nbytes, quad.quad_vertices, GL_STATIC_DRAW)
 
         # Quad Element Buffer Object
-        self.quad_EBO = glGenBuffers(1)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO)
+        self.quad_EBO_g = glGenBuffers(1)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO_g)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
 
         glEnableVertexAttribArray(0)
@@ -306,7 +306,26 @@ class Shader:
         glEnableVertexAttribArray(1)
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(12))
 
-        # glBindVertexArray(0)
+    def vinculate_sky(self, quad):
+        # Quad VAO
+        self.quad_VAO_s = glGenVertexArrays(1)
+        glBindVertexArray(self.quad_VAO_s)
+
+        # Quad Vertex Buffer Object
+        self.quad_VBO_s = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO_s)
+        glBufferData(GL_ARRAY_BUFFER, quad.quad_vertices.nbytes, quad.quad_vertices, GL_STATIC_DRAW)
+
+        # Quad Element Buffer Object
+        self.quad_EBO_s = glGenBuffers(1)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO_s)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
+
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(0))
+
+        glEnableVertexAttribArray(1)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(12))
 
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
@@ -325,10 +344,15 @@ for i in range(n+m):
 ground = Ground()
 ground.load_texture(3)
 
+# Creando el cielo
+sky = Ground()
+sky.load_texture(4)
+
 # Iniciando los Shaders de my_cubes
 main_shader = Shader()
 main_shader.vinculate_cubes(my_cubes)
-main_shader.vinculate_quads(ground)
+main_shader.vinculate_ground(ground)
+main_shader.vinculate_sky(sky)
 
 
 glUseProgram(main_shader.shader)
@@ -341,6 +365,9 @@ projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.
 
 ground_position = pyrr.Vector3([0.0, 0.0, 0.0])
 matrix_ground_position = pyrr.matrix44.create_from_translation(ground_position)
+
+sky_position = pyrr.Vector3([0.0, 9.0, 0.0])
+matrix_sky_position = pyrr.matrix44.create_from_translation(sky_position)
 
 # List that stores positions of the cubes
 cube_position = [0]*(n+m)
@@ -375,7 +402,11 @@ puntaje = 0
 def main():
     global view,puntaje
     translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
-    
+    pygame.init()
+    music = pygame.mixer.music.load('music/music.mp3')
+    pygame.mixer.music.play(-1)
+    hitSound = pygame.mixer.Sound('./music/hit.wav')
+
     glfw.set_input_mode(main_window.win, glfw.STICKY_KEYS,GL_TRUE) 
 	# Enable key event callback
     glfw.set_key_callback(main_window.win, main_window.key_event)
@@ -389,8 +420,15 @@ def main():
         glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
         # Drawing the ground
         model = matrix_ground_position
-        glBindVertexArray(main_shader.quad_VAO)
+        glBindVertexArray(main_shader.quad_VAO_g)
         glBindTexture(GL_TEXTURE_2D, ground.id_texture)
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+        glDrawElements(GL_TRIANGLES, len(quad_indices), GL_UNSIGNED_INT, None)
+
+        # Drawing the sky
+        model = matrix_sky_position
+        glBindVertexArray(main_shader.quad_VAO_s)
+        glBindTexture(GL_TEXTURE_2D, sky.id_texture)
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
         glDrawElements(GL_TRIANGLES, len(quad_indices), GL_UNSIGNED_INT, None)
 
@@ -414,10 +452,12 @@ def main():
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
             glDrawElements(GL_TRIANGLES, len(cube_indices), GL_UNSIGNED_INT, None)
             matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
+
         for i in range(m):
             for j in range(n):
-                #Condicion para que exista un choque
+                #Condición para que exista un choque
                 if abs(cube_position[i+n][2] - cube_position[j][2]) < .1 and abs(cube_position[i+n][0] - cube_position[j][0]) < 1:
+                    hitSound.play()
                     cube_position[j] = pyrr.Vector3([random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
                     puntaje+=1
                     os.system("clear")

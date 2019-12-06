@@ -113,9 +113,16 @@
 -   Pendiente de arreglar que el objeto gato no llega a mover su cabeza.
 - By: A.L.
 
-## Versión 1.1.2
+## Versión 1.1.3:
 -   Agregados los choques entre el gato y los edificios.
 -   Reparado el bug del desplazamiento del gato.
 -   Agregado la reubicacion de los edificios al fondo.
 -   Agregado el contador de cuantos edificios ha destruido.
 -   By: E.S.
+
+## Versión 1.1.4:
+-   Actualización de _readme.md_.
+-   Implementado el cielo, nueva función dentro de `Window`, `vinculate_sky`.
+-   Importada la librería _pygame_ para implementar los sonidos.
+-   Implementado sonido de fondo y sonido de choques.
+-   By: A.L.
