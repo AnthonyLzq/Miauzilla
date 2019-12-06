@@ -94,3 +94,8 @@
 -   El dibujo se hace utilizando `glBindVertexArray`.
 -   Dejando de monitoriar la carpeta __\_\_pycache\_\___.
 -   By: A.L.
+
+## Versión 1.1.0:
+-   Se renderiza el objeto gato usando cubos de diferentes tamaños.
+-   Se implementan las escalas para los obstáculos.
+-   By: E.S. 

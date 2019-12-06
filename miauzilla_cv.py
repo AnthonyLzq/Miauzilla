@@ -102,6 +102,36 @@ texture_surface = [
 # Seteando cantidad de cubos obstaculos
 n = 30
 
+# Seteando las pos del los cubos que conforman el gato
+gato = [[0, 0.5, -4.5], #cuerpo1/2
+ [0, 0.5, -3.5], #cuerpo2/2
+ [0, 0.5, -2.5], #cola1/3
+ [0, 0.5, -1.5], #cola2/3
+ [0, 0.5, -0.5], #cola2/3
+ [0, 1, -5], #cabeza1/2
+ [0, 1, -5.5], #cabeza2/2
+ [0.25, 0, -3.25], #pierna trasera derecha
+ [-0.25, 0, -3.25], #pierna trasera izquierda
+ [0.25, 0, -4.75], #pierna delantera derecha
+ [-0.25, 0, -4.75] #pierna delantera izquierda
+ ] #Fin de las pos de los cubos
+
+gato_escala = [[1, 1, 1], #cuerpo1/2
+ [1, 1, 1], #cuerpo2/2
+ [0.5, 0.5, 1], #cola1/3
+ [0.5, 0.5, 1], #cola2/3
+ [0.5, 0.5, 1], #cola2/3
+ [1, 1, 1], #cabeza1/2
+ [0.5, 0.5, 0.5], #cabeza2/2
+ [0.25, 1, 0.25], #pierna trasera derecha
+ [0.25, 1, 0.25], #pierna trasera izquierda
+ [0.25, 1, 0.25], #pierna delantera derecha
+ [0.25, 1, 0.25] #pierna delantera izquierda
+ ] #Fin de las pos de los cubos
+
+# Seteando cantidad de cubos que conformar el gato principal
+m = len(gato)
+
 # Reversing the images to be properly render
 for i in range(len(texture_surface)):
     texture_surface[i] = texture_surface[i].transpose(Image.FLIP_TOP_BOTTOM)
@@ -199,10 +229,10 @@ class Shader:
         self.shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
     def vinculate_cubes(self, cubes):
-        global n
-        self.cube_VAO = [0]*(n+1)
-        self.cube_VBO = [0]*(n+1)
-        self.cube_EBO = [0]*(n+1)
+        global n,m
+        self.cube_VAO = [0]*(n+m)
+        self.cube_VBO = [0]*(n+m)
+        self.cube_EBO = [0]*(n+m)
 
         for x, cube in enumerate(cubes):
             # Vertex array object for each cube in cubes
@@ -253,14 +283,15 @@ class Shader:
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
 
-my_cubes = [0]*(n+1)
-for i in range(n):
-    my_cubes[i] = Cube()
-    my_cubes[i].load_texture(random.randint(0, 1))
-
-# Creando el cubo principal que será el personaje
-my_cubes[n] = Cube()
-my_cubes[n].load_texture(2)
+my_cubes = [0]*(n+m)
+for i in range(n+m):
+    if i < n:
+        my_cubes[i] = Cube()
+        my_cubes[i].load_texture(random.randint(0, 1))
+    else:
+        # Creando el cubo principal que será el gato
+        my_cubes[i] = Cube()
+        my_cubes[i].load_texture(2)
 
 # Creando el suelo
 ground = Ground()
@@ -284,7 +315,7 @@ ground_position = pyrr.Vector3([0.0, 0.0, 0.0])
 matrix_ground_position = pyrr.matrix44.create_from_translation(ground_position)
 
 # List that stores positions of the cubes
-cube_position = [0]*(n+1)
+cube_position = [0]*(n+m)
 for i in range(n):
     # Initializing the positions of the cubes
     cube_position[i] = pyrr.Vector3([
@@ -292,12 +323,13 @@ for i in range(n):
                         0.0, 
                         random.randrange(-100, -40)])
 
-# Seteando las posicion del personaje principal
-cube_position[n] = pyrr.Vector3([0.0, 0.0, -4.0])
+for i in range(m):
+    # Seteando las posicion del gato principal
+    cube_position[n+i] = pyrr.Vector3(gato[i])
 
 # Matrix that will control the translation of the cubes
-matrix_cube_translation = [0]*(n+1)
-for i in range(n+1):
+matrix_cube_translation = [0]*(n+m)
+for i in range(n+m):
     # Seting the translation matrix to the initial position of the cube
     matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
 
@@ -326,14 +358,21 @@ def main():
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
         glDrawElements(GL_TRIANGLES, len(quad_indices), GL_UNSIGNED_INT, None)
 
-        for i in range(n+1):
+        for i in range(n+m):
             # We will translate every object, except the main character
-            if i != n:
+            if i < n:
                 cube_position[i] += translate_cube_z
                 if cube_position[i][2] >= 0.0:
                     cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 0.0, random.randrange(-100, -40)])
+                #Escala de todos los objetos que son obstaculos
+                escala = pyrr.matrix44.create_from_scale([1,4,1])
+            else:
+                #Obteniendo los valores de la escala previamente difinida
+                escala = pyrr.matrix44.create_from_scale(gato_escala[i-n])
+            
+            #Hallando el model resultante al multiplicar la escala y la translacion
+            model = np.dot(escala,matrix_cube_translation[i])
 
-            model = matrix_cube_translation[i]
             glBindVertexArray(main_shader.cube_VAO[i])
             glBindTexture(GL_TEXTURE_2D, my_cubes[i].id_texture)
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
