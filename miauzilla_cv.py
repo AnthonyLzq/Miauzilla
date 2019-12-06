@@ -43,69 +43,85 @@ void main(){
 }
 """
 
-            #Vertices          #Texture
-vertices = [-0.5, -0.5,  0.5,  0.0, 0.0,
-             0.5, -0.5,  0.5,  1.0, 0.0,
-             0.5,  0.5,  0.5,  1.0, 1.0,
-            -0.5,  0.5,  0.5,  0.0, 1.0,
+quad_vertices = [#Vertices                #Texture
+                -100.0, -10.0,  20.0,      0.0, 0.0,
+                 100.0, -10.0,  20.0,      1.0, 0.0,
+                 100.0, -10.0,  -10000,    1.0, 1.0,
+                -100.0, -10.0,  -10000,    0.0, 1.0]
 
-            -0.5, -0.5, -0.5,  0.0, 0.0,
-             0.5, -0.5, -0.5,  1.0, 0.0,
-             0.5,  0.5, -0.5,  1.0, 1.0,
-            -0.5,  0.5, -0.5,  0.0, 1.0,
 
-             0.5, -0.5, -0.5,  0.0, 0.0,
-             0.5,  0.5, -0.5,  1.0, 0.0,
-             0.5,  0.5,  0.5,  1.0, 1.0,
-             0.5, -0.5,  0.5,  0.0, 1.0,
+quad_indices = [0, 1, 2, 2, 3, 0]
 
-            -0.5,  0.5, -0.5,  0.0, 0.0,
-            -0.5, -0.5, -0.5,  1.0, 0.0,
-            -0.5, -0.5,  0.5,  1.0, 1.0,
-            -0.5,  0.5,  0.5,  0.0, 1.0,
 
-            -0.5, -0.5, -0.5,  0.0, 0.0,
-             0.5, -0.5, -0.5,  1.0, 0.0,
-             0.5, -0.5,  0.5,  1.0, 1.0,
-            -0.5, -0.5,  0.5,  0.0, 1.0,
+cube_vertices = [#Vertices         #Texture
+                -0.5, -0.5,  0.5,  0.0, 0.0,
+                 0.5, -0.5,  0.5,  1.0, 0.0,
+                 0.5,  0.5,  0.5,  1.0, 1.0,
+                -0.5,  0.5,  0.5,  0.0, 1.0,
 
-             0.5,  0.5, -0.5,  0.0, 0.0,
-            -0.5,  0.5, -0.5,  1.0, 0.0,
-            -0.5,  0.5,  0.5,  1.0, 1.0,
-             0.5,  0.5,  0.5,  0.0, 1.0]
+                -0.5, -0.5, -0.5,  0.0, 0.0,
+                 0.5, -0.5, -0.5,  1.0, 0.0,
+                 0.5,  0.5, -0.5,  1.0, 1.0,
+                -0.5,  0.5, -0.5,  0.0, 1.0,
+
+                 0.5, -0.5, -0.5,  0.0, 0.0,
+                 0.5,  0.5, -0.5,  1.0, 0.0,
+                 0.5,  0.5,  0.5,  1.0, 1.0,
+                 0.5, -0.5,  0.5,  0.0, 1.0,
+
+                -0.5,  0.5, -0.5,  0.0, 0.0,
+                -0.5, -0.5, -0.5,  1.0, 0.0,
+                -0.5, -0.5,  0.5,  1.0, 1.0,
+                -0.5,  0.5,  0.5,  0.0, 1.0,
+
+                -0.5, -0.5, -0.5,  0.0, 0.0,
+                 0.5, -0.5, -0.5,  1.0, 0.0,
+                 0.5, -0.5,  0.5,  1.0, 1.0,
+                -0.5, -0.5,  0.5,  0.0, 1.0,
+
+                 0.5,  0.5, -0.5,  0.0, 0.0,
+                -0.5,  0.5, -0.5,  1.0, 0.0,
+                -0.5,  0.5,  0.5,  1.0, 1.0,
+                 0.5,  0.5,  0.5,  0.0, 1.0]
             
 
-indices =  [0,  1,  2,  2,  3,  0,
-            4,  5,  6,  6,  7,  4,
-            8,  9, 10, 10, 11,  8,
-            12, 13, 14, 14, 15, 12,
-            16, 17, 18, 18, 19, 16,
-            20, 21, 22, 22, 23, 20]
+cube_indices =  [0,  1,  2,  2,  3,  0,
+                4,  5,  6,  6,  7,  4,
+                8,  9, 10, 10, 11,  8,
+                12, 13, 14, 14, 15, 12,
+                16, 17, 18, 18, 19, 16,
+                20, 21, 22, 22, 23, 20]
 
 # List that stores textures
-textureSurface = [  
+texture_surface = [  
                 Image.open('./textures/cat.png'), 
-                Image.open('./textures/ursa.png')]
+                Image.open('./textures/ursa.png'),
+                Image.open('./textures/01-character.png'),
+                Image.open('./textures/03-ground.png')]
+
+# Seteando cantidad de cubos obstaculos
+n = 30
 
 # Reversing the images to be properly render
-for i in range(len(textureSurface)):
-    textureSurface[i] = textureSurface[i].transpose(Image.FLIP_TOP_BOTTOM)
-    
-textureData =  [textureSurface[0].convert("RGBA").tobytes(), 
-                textureSurface[1].convert("RGBA").tobytes()]
+for i in range(len(texture_surface)):
+    texture_surface[i] = texture_surface[i].transpose(Image.FLIP_TOP_BOTTOM)
+
+texture_data = [0]*len(texture_surface)
+for i in range(len(texture_data)):
+    texture_data[i] = texture_surface[i].convert("RGBA").tobytes()
 
 class Cube:
     '''
     Esta clase es la que representará los cubos que serán renderizados en la ventana principal.
-    Se inician los vértices modificando la constante 'vertices' e 'indices' que se encuentran líneas arriba, pasando estas a numpys array.
+    Se inician los vértices modificando la constante 'cube_vertices' e 'cube_indices' que se encuentran líneas arriba, pasando estas a numpys array.
     
     Esta clase contiene los siguientes métodos:
         - load_texture: se encarga de envolver al cubo con una textura pasada como parámetro.
     '''
     def __init__(self):
         # Conversión de array a np array, para los vértices e índices.
-        self.vertices = np.array(vertices, dtype=np.float32)
-        self.indices = np.array(indices, dtype=np.uint32)
+        self.cube_vertices = np.array(cube_vertices, dtype=np.float32)
+        self.cube_indices = np.array(cube_indices, dtype=np.uint32)
         self.id_texture = 0
     
     def load_texture(self, file):
@@ -119,7 +135,28 @@ class Cube:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface[file].width, textureSurface[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureData[file])
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_surface[file].width, texture_surface[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data[file])
+
+class Ground:
+    '''
+    Esta clase representará será la que permitirá renderizar el suelo y también en el cielo, para esto se utilizará un cuadrado.
+
+    Esta clase contiene los siguientes métodos:
+    - load_texture: se encarga de envolver al cuadrado con una textura pasada como parámetro.
+
+    '''
+    def __init__(self):
+        self.quad_vertices = np.array(quad_vertices, dtype=np.float32)
+        self.quad_indices = np.array(quad_indices, dtype=np.uint32)
+        self.id_texture = 0
+
+    def load_texture(self, file):
+        self.id_texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.id_texture)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture_surface[file].width, texture_surface[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data[file])
+        # glEnable(GL_TEXTURE_2D)
+
 
 class Window:
     '''
@@ -145,55 +182,94 @@ class Window:
 
     def window_resize(self, window, width, height):
         glViewport(0, 0, width, height)
-        projection = pyrr.matrix44.create_perspective_projection_matrix(45, width/height, 0.1, 100)
+        projection = pyrr.matrix44.create_perspective_projection_matrix(45, width/height, 0.1, 1000)
+        # translation = pyrr.matrix44.create_from_translation([0.0, 0.1, 0.0])
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
 
 class Shader:
     '''
     Esta clase representará al shader que utilizará el programa para renderizar los objetos OpenGl. Este se inicializa recibiendo como parámetro el vector que almacena los cubos a renderizar.
+
+    Esta clase contiene los siguientes métodos:
+        - vinculate_cubes: asocia a cada cubo de una lista de cubos data un VAO, VBO y EBO.
+        - vinculate_quads: asocia el suelo con un VAO, VBO y EBO.
     '''
-    def __init__(self, cubes):        
+    def __init__(self):        
         self.shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
-        # Vertex Buffer Object
-        VBO = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, VBO)
-        for cube in cubes:
-            glBufferData(GL_ARRAY_BUFFER, cube.vertices.nbytes, cube.vertices, GL_STATIC_DRAW)
+    def vinculate_cubes(self, cubes):
+        global n
+        self.cube_VAO = [0]*(n+1)
+        self.cube_VBO = [0]*(n+1)
+        self.cube_EBO = [0]*(n+1)
 
-        # Element Buffer Object
-        EBO = glGenBuffers(1)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO)
-        for cube in cubes:
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.indices.nbytes, cube.indices, GL_STATIC_DRAW)
+        for x, cube in enumerate(cubes):
+            # Vertex array object for each cube in cubes
+            self.cube_VAO[x] = glGenVertexArrays(1)
+            glBindVertexArray(self.cube_VAO[x])
+
+            # Vertex Buffer Object for each cube in cubes
+            self.cube_VBO[x] = glGenBuffers(1)
+            glBindBuffer(GL_ARRAY_BUFFER, self.cube_VBO[x])
+            glBufferData(GL_ARRAY_BUFFER, cube.cube_vertices.nbytes, cube.cube_vertices, GL_STATIC_DRAW)
+
+            # Element Buffer Object for each cube in cubes
+            self.cube_EBO[x] = glGenBuffers(1)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.cube_EBO[x])
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.cube_indices.nbytes, cube.cube_indices, GL_STATIC_DRAW)
+
+            glEnableVertexAttribArray(0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 5, ctypes.c_void_p(0))
+
+            glEnableVertexAttribArray(1)
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 5, ctypes.c_void_p(12))
+
+            # glBindVertexArray(0)
+    
+    def vinculate_quads(self, quad):
+        # Quad VAO
+        self.quad_VAO = glGenVertexArrays(1)
+        glBindVertexArray(self.quad_VAO)
+
+        # Quad Vertex Buffer Object
+        self.quad_VBO = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO)
+        glBufferData(GL_ARRAY_BUFFER, quad.quad_vertices.nbytes, quad.quad_vertices, GL_STATIC_DRAW)
+
+        # Quad Element Buffer Object
+        self.quad_EBO = glGenBuffers(1)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
 
         glEnableVertexAttribArray(0)
-        for cube in cubes:
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, cube.vertices.itemsize * 5, ctypes.c_void_p(0))
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(0))
 
         glEnableVertexAttribArray(1)
-        for cube in cubes:
-            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, cube.vertices.itemsize * 5, ctypes.c_void_p(12))
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 5, ctypes.c_void_p(12))
+
+        # glBindVertexArray(0)
 
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
-
-# Seteando cantidad de cubos obstaculos
-n = 30
 
 my_cubes = [0]*(n+1)
 for i in range(n):
     my_cubes[i] = Cube()
     my_cubes[i].load_texture(random.randint(0, 1))
 
-
 # Creando el cubo principal que será el personaje
 my_cubes[n] = Cube()
-my_cubes[n].load_texture(1)
+my_cubes[n].load_texture(2)
+
+# Creando el suelo
+ground = Ground()
+ground.load_texture(3)
 
 # Iniciando los Shaders de my_cubes
-main_shader = Shader(my_cubes)
+main_shader = Shader()
+main_shader.vinculate_cubes(my_cubes)
+main_shader.vinculate_quads(ground)
 
 
 glUseProgram(main_shader.shader)
@@ -202,7 +278,10 @@ glEnable(GL_DEPTH_TEST)
 glEnable(GL_BLEND)
 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 100)
+projection = pyrr.matrix44.create_perspective_projection_matrix(45, 1080/720, 0.1, 1000)
+
+ground_position = pyrr.Vector3([0.0, 0.0, 0.0])
+matrix_ground_position = pyrr.matrix44.create_from_translation(ground_position)
 
 # List that stores positions of the cubes
 cube_position = [0]*(n+1)
@@ -214,10 +293,7 @@ for i in range(n):
                         random.randrange(-100, -40)])
 
 # Seteando las posicion del personaje principal
-cube_position[n] = pyrr.Vector3([
-                        0.0, 
-                        0.0, 
-                        -4.0])
+cube_position[n] = pyrr.Vector3([0.0, 0.0, -4.0])
 
 # Matrix that will control the translation of the cubes
 matrix_cube_translation = [0]*(n+1)
@@ -243,6 +319,13 @@ def main():
         glfw.poll_events()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+        # Drawing the ground
+        model = matrix_ground_position
+        glBindVertexArray(main_shader.quad_VAO)
+        glBindTexture(GL_TEXTURE_2D, ground.id_texture)
+        glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
+        glDrawElements(GL_TRIANGLES, len(quad_indices), GL_UNSIGNED_INT, None)
+
         for i in range(n+1):
             # We will translate every object, except the main character
             if i != n:
@@ -251,9 +334,10 @@ def main():
                     cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 0.0, random.randrange(-100, -40)])
 
             model = matrix_cube_translation[i]
+            glBindVertexArray(main_shader.cube_VAO[i])
             glBindTexture(GL_TEXTURE_2D, my_cubes[i].id_texture)
             glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
-            glDrawElements(GL_TRIANGLES, len(indices), GL_UNSIGNED_INT, None)
+            glDrawElements(GL_TRIANGLES, len(cube_indices), GL_UNSIGNED_INT, None)
             matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
 
         glfw.swap_buffers(main_window.win)
