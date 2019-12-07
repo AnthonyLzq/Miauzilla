@@ -1,6 +1,10 @@
 # Project for Graphic Computation course
 
+## Getting started
 This is supposed to be our project, 'Miauzilla'. It will be a _endless runner game_ where the main character is supposed to be a cat with super powers.
+
+### Prerequisites
+You must use at least Python version 3.7.
 
 ## Setup
 You must have installed the following modules:
@@ -29,4 +33,6 @@ Once you have the dependencies aPyOpenGLlready installed, you can play _Miauzill
 $ python miauzilla.py
 ```
 
-Enjoy :).
+## Authors
+-   **Anthony Luzquiños** - _Initial Work_ - _Documentation_ - [AnthonyLzq](https://github.com/AnthonyLzq).
+-   Also, you can see the list of [contributors](https://github.com/AnthonyLzq/Miauzilla_2/graphs/contributors) that had been colaborated with this project.

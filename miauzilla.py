@@ -1,15 +1,17 @@
 import glfw
-from math import *
-from OpenGL.GL import *
-from OpenGL.GL.shaders import compileProgram, compileShader
-import numpy as np
 import pyrr
 import random
 import pygame
-from PIL import Image
 import os
+import numpy as np
 
-# Esta variable realiza el manejo de la posición y la textura de cualquier objeto gráfico que sea creado con el shader program
+from math import *
+from PIL import Image
+from OpenGL.GL import *
+from OpenGL.GL.shaders import compileProgram, compileShader
+
+
+# This variable handles the position, texture and view of any OpenGL object that is created with the shader program
 vertex_src = """
 #version 310 es
 
@@ -33,7 +35,7 @@ void main(){
 }
 """
 
-# Esta variable "encapsula" la textura (imagen) que se desea usar con el tipo de textura a usar (2D en este caso), y retorna una textura 2D con la textura (imagen) deseada.
+# This variable "encapsulates" the texture (image) that we want to use with the type of texture (2D in this case), and ir returns a texture 2D with the image we wanted.
 fragment_src = """
 #version 310 es
 
@@ -48,7 +50,6 @@ uniform vec3 light_direction;
 uniform sampler2D s_texture;
 
 void main(){
-    //vec3 light_direction = (0.0f, 0.0f, 0.1f);
     float diffuse = max(dot(v_normal, light_direction), 0.0);
     float ambient = 0.3;
     float lighting = max(diffuse, ambient);
@@ -58,7 +59,7 @@ void main(){
 }
 """
 
-quad_vertices = [#Vertices                #Texture
+quad_vertices = [#Vertices               #Texture       #Light
                 -10.0, -0.5,  20.0,      0.0, 0.0,      0.0,  1.0,  0.0,  
                  10.0, -0.5,  20.0,      1.0, 0.0,      0.0,  1.0,  0.0,
                  10.0, -0.5,  -10000,    1.0, 1.0,      0.0,  1.0,  0.0,
@@ -68,36 +69,36 @@ quad_vertices = [#Vertices                #Texture
 quad_indices = [0, 1, 2, 2, 3, 0]
 
 
-cube_vertices = [#Vertices         #Texture     #Light
-                -0.5, -0.5,  0.5,  0.0, 0.0,     0.0,  0.0,  1.0,  
-                 0.5, -0.5,  0.5,  1.0, 0.0,     0.0,  0.0,  1.0,  
-                 0.5,  0.5,  0.5,  1.0, 1.0,     0.0,  0.0,  1.0,  
-                -0.5,  0.5,  0.5,  0.0, 1.0,     0.0,  0.0,  1.0,  
+cube_vertices = [#Vertices          #Texture     #Light
+                -0.5, -0.5,  0.5,   0.0, 0.0,    0.0,  0.0,  1.0,  
+                 0.5, -0.5,  0.5,   1.0, 0.0,    0.0,  0.0,  1.0,  
+                 0.5,  0.5,  0.5,   1.0, 1.0,    0.0,  0.0,  1.0,  
+                -0.5,  0.5,  0.5,   0.0, 1.0,    0.0,  0.0,  1.0,  
 
-                -0.5, -0.5, -0.5,  0.0, 0.0,     0.0,  0.0, -1.0,
-                 0.5, -0.5, -0.5,  1.0, 0.0,     0.0,  0.0, -1.0,
-                 0.5,  0.5, -0.5,  1.0, 1.0,     0.0,  0.0, -1.0,
-                -0.5,  0.5, -0.5,  0.0, 1.0,     0.0,  0.0, -1.0,
+                -0.5, -0.5, -0.5,   0.0, 0.0,    0.0,  0.0, -1.0,
+                 0.5, -0.5, -0.5,   1.0, 0.0,    0.0,  0.0, -1.0,
+                 0.5,  0.5, -0.5,   1.0, 1.0,    0.0,  0.0, -1.0,
+                -0.5,  0.5, -0.5,   0.0, 1.0,    0.0,  0.0, -1.0,
 
-                 0.5, -0.5, -0.5,  0.0, 0.0,     1.0,  0.0, -1.0,
-                 0.5,  0.5, -0.5,  1.0, 0.0,     1.0,  0.0, -1.0,
-                 0.5,  0.5,  0.5,  1.0, 1.0,     1.0,  0.0, -1.0,
-                 0.5, -0.5,  0.5,  0.0, 1.0,     1.0,  0.0, -1.0,
+                 0.5, -0.5, -0.5,   0.0, 0.0,    1.0,  0.0, -1.0,
+                 0.5,  0.5, -0.5,   1.0, 0.0,    1.0,  0.0, -1.0,
+                 0.5,  0.5,  0.5,   1.0, 1.0,    1.0,  0.0, -1.0,
+                 0.5, -0.5,  0.5,   0.0, 1.0,    1.0,  0.0, -1.0,
 
-                -0.5,  0.5, -0.5,  0.0, 0.0,    -1.0,  0.0,  0.0,
-                -0.5, -0.5, -0.5,  1.0, 0.0,    -1.0,  0.0,  0.0,
-                -0.5, -0.5,  0.5,  1.0, 1.0,    -1.0,  0.0,  0.0,
-                -0.5,  0.5,  0.5,  0.0, 1.0,    -1.0,  0.0,  0.0,
+                -0.5,  0.5, -0.5,   0.0, 0.0,   -1.0,  0.0,  0.0,
+                -0.5, -0.5, -0.5,   1.0, 0.0,   -1.0,  0.0,  0.0,
+                -0.5, -0.5,  0.5,   1.0, 1.0,   -1.0,  0.0,  0.0,
+                -0.5,  0.5,  0.5,   0.0, 1.0,   -1.0,  0.0,  0.0,
 
-                -0.5, -0.5, -0.5,  0.0, 0.0,     0.0, -1.0, -1.0,
-                 0.5, -0.5, -0.5,  1.0, 0.0,     0.0, -1.0, -1.0,
-                 0.5, -0.5,  0.5,  1.0, 1.0,     0.0, -1.0, -1.0,
-                -0.5, -0.5,  0.5,  0.0, 1.0,     0.0, -1.0, -1.0,
+                -0.5, -0.5, -0.5,   0.0, 0.0,    0.0, -1.0, -1.0,
+                 0.5, -0.5, -0.5,   1.0, 0.0,    0.0, -1.0, -1.0,
+                 0.5, -0.5,  0.5,   1.0, 1.0,    0.0, -1.0, -1.0,
+                -0.5, -0.5,  0.5,   0.0, 1.0,    0.0, -1.0, -1.0,
 
-                 0.5,  0.5, -0.5,  0.0, 0.0,     0.0,  1.0, -1.0,
-                -0.5,  0.5, -0.5,  1.0, 0.0,     0.0,  1.0, -1.0,
-                -0.5,  0.5,  0.5,  1.0, 1.0,     0.0,  1.0, -1.0,
-                 0.5,  0.5,  0.5,  0.0, 1.0,     0.0,  1.0, -1.0]
+                 0.5,  0.5, -0.5,   0.0, 0.0,    0.0,  1.0, -1.0,
+                -0.5,  0.5, -0.5,   1.0, 0.0,    0.0,  1.0, -1.0,
+                -0.5,  0.5,  0.5,   1.0, 1.0,    0.0,  1.0, -1.0,
+                 0.5,  0.5,  0.5,   0.0, 1.0,    0.0,  1.0, -1.0]
             
 
 cube_indices =  [0,  1,  2,  2,  3,  0,
@@ -115,38 +116,37 @@ texture_surface = [
                 Image.open('./textures/03-ground.png'),
                 Image.open('./textures/04-sky.png')]
 
-# Seteando cantidad de cubos obstaculos
+# Setting the quantity of obstacles
 n = 35
 
-# Seteando las pos del los cubos que conforman el gato
-gato = [[0.0, 0.5, -4.5], #cuerpo1/2
-        [0.0, 0.5, -3.5], #cuerpo2/2 
-        [0.0, 0.5, -2.5], #cola1/3
-        [0.0, 0.5, -1.5], #cola2/3
-        [0.0, 0.5, -0.5], #cola2/3
-        [0.0, 1.0, -5.0], #cabeza1/2
-        [0.0, 1, -5.5], #cabeza2/2    
-        [0.25, 0.0, -3.25], #pierna trasera derecha
-        [-0.25, 0.0, -3.25], #pierna trasera izquierda
-        [0.25, 0.0, -4.75], #pierna delantera derecha
-        [-0.25, 0.0, -4.75] #pierna delantera izquierda
-] #Fin de las pos de los cubos
+# Setting the position of the cubes that conform the cat
+gato = [[0.0, 0.5, -4.5], # body 1/2
+        [0.0, 0.5, -3.5], # body 2/2 
+        [0.0, 0.5, -2.5], # tail 1/3
+        [0.0, 0.5, -1.5], # tail 2/3
+        [0.0, 0.5, -0.5], # tail 2/3
+        [0.0, 1.0, -5.0], # head 1/2
+        [0.0, 1.0, -5.5], # head 2/2    
+        [0.25, 0.0, -3.25], # right back leg
+        [-0.25, 0.0, -3.25], # left back leg
+        [0.25, 0.0, -4.75], # right frong leg
+        [-0.25, 0.0, -4.75]] # left front leg
+
 
 gato_escala = [
-                [1.0, 1.0, 1.0], #cuerpo1/2
-                [1.0, 1.0, 1.0], #cuerpo2/2
-                [0.5, 0.5, 1.0], #cola1/3
-                [0.3, 0.3, 1.0], #cola2/3
-                [0.2, 0.2, 1.0], #cola2/3
-                [1.0, 1.0, 1.0], #cabeza1/2
-                [0.5, 0.5, 0.5], #cabeza2/2
-                [0.25, 1.0, 0.25], #pierna trasera derecha
-                [0.25, 1.0, 0.25], #pierna trasera izquierda
-                [0.25, 1.0, 0.25], #pierna delantera derecha
-                [0.25, 1.0, 0.25] #pierna delantera izquierda
-] #Fin de las pos de los cubos
+                [1.0, 1.0, 1.0], # body 1/2
+                [1.0, 1.0, 1.0], # body 2/2
+                [0.5, 0.5, 1.0], # tail 1/3
+                [0.3, 0.3, 1.0], # tail 2/3
+                [0.2, 0.2, 1.0], # tail 2/3
+                [1.0, 1.0, 1.0], # head 1/2
+                [0.5, 0.5, 0.5], # head 2/2
+                [0.25, 1.0, 0.25], # right back leg
+                [0.25, 1.0, 0.25], # left back legizquierda
+                [0.25, 1.0, 0.25], # right front leg
+                [0.25, 1.0, 0.25]] # left front leg
 
-# Seteando cantidad de cubos que conformar el gato principal
+# Setting the quantity of cubes that conform the cat
 m = len(gato)
 
 # Reversing the images to be properly render
@@ -159,14 +159,14 @@ for i in range(len(texture_data)):
 
 class Cube:
     '''
-    Esta clase es la que representará los cubos que serán renderizados en la ventana principal.
-    Se inician los vértices modificando la constante 'cube_vertices' e 'cube_indices' que se encuentran líneas arriba, pasando estas a numpys array.
+    This class represents the cubes that will be render in the main window.
+    Vertices are initialized by modifying the "cube vertices" and "cube indices" constants that are lines below. They became numpy arrays instead of lists.    Esta clase contiene los siguientes 
     
-    Esta clase contiene los siguientes métodos:
-        - load_texture: se encarga de envolver al cubo con una textura pasada como parámetro.
+    This class has the following methods:
+        - load_texture: it's responsible for wrapping the cube with a texture passed as a parameter.
     '''
     def __init__(self):
-        # Conversión de array a np array, para los vértices e índices.
+        # Conversion from array to numpy array, for vertices and indices.
         self.cube_vertices = np.array(cube_vertices, dtype=np.float32)
         self.cube_indices = np.array(cube_indices, dtype=np.uint32)
         self.id_texture = 0
@@ -187,9 +187,10 @@ class Cube:
 class Ground:
     '''
     Esta clase representará será la que permitirá renderizar el suelo y también en el cielo, para esto se utilizará un cuadrado.
+    This class will represent the ground and sky, for this a quad will be used.
 
-    Esta clase contiene los siguientes métodos:
-    - load_texture: se encarga de envolver al cuadrado con una textura pasada como parámetro.
+    This class has de following methods:
+    - load_texture: it's resposible for wrapping the quad with a texture passed as a parameter.
 
     '''
     def __init__(self):
@@ -202,21 +203,22 @@ class Ground:
         glBindTexture(GL_TEXTURE_2D, self.id_texture)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture_surface[file].width, texture_surface[file].height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data[file])
-        # glEnable(GL_TEXTURE_2D)
 
 
 class Window:
     '''
-    Esta clase es la que representa la ventana principal donde el juego toma lugar, se inicializa recibiendo como parámetros un ancho, largo y un título.
-    La ventana se crea por defecto en la posición (400, 200).
+    This class is the one that represents the main window where the game takes place, it is initialized receiving as parameters a width, length and a title.
+    The window is created by default in the position (400, 200).
     
-    Esta clase contiene los siguientes métodos:
-        - window_resize: es la callback que se ejecuta siempre que haya un evento de resize de ventana.
+    This class has the following methods:
+        - window_resize: it is the callback that is executed when there is a window resize.
     '''
+    # Constructor
     def __init__(self, width: int, height: int, title: str):
         if not glfw.init():
             raise Exception("glfw can not be initilized")
 
+        # Initializing the window
         self.win = glfw.create_window(width, height, title, None, None)
         self.mode_perspective = 0
         self.light_perspective = 0
@@ -229,15 +231,17 @@ class Window:
         glfw.make_context_current(self.win)
         glfw.set_window_size_callback(self.win, self.window_resize)
 
+    # Callback method that handles the window resize
     def window_resize(self, window, width, height):
         glViewport(0, 0, width, height)
         projection = pyrr.matrix44.create_perspective_projection_matrix(45, width/height, 0.1, 1000)
-        # translation = pyrr.matrix44.create_from_translation([0.0, 0.1, 0.0])
         glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
 
+    # Method that handles with the key events
     def key_event(self, window, key, scancode, action, mods):
         global view, n, m, cube_position
 
+        # Key to exit the game
         if action == glfw.PRESS and key == glfw.KEY_Q:
             if self.mode_perspective == 0:
                 view = pyrr.matrix44.create_look_at(pyrr.Vector3([10, 8, 3]), pyrr.Vector3([0, 1.5, 0]), pyrr.Vector3([0, 1, 0]))
@@ -249,19 +253,20 @@ class Window:
                 view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, -1]), pyrr.Vector3([0, 1, 0]))
                 self.mode_perspective = 0
 
+        # Handling with the position of the light
         if action == glfw.PRESS and key == glfw.KEY_E:
-            global aux
+            global light_loc
             if self.mode_perspective == 0:
-                glUniform3f(aux, 0.0, 0.0, 1.0)
+                glUniform3f(light_loc, 0.0, 0.0, 1.0)
                 self.mode_perspective += 1
             elif self.mode_perspective == 1:
-                glUniform3f(aux, 0.0, 1.0, 0.0)
+                glUniform3f(light_loc, 0.0, 1.0, 0.0)
                 self.mode_perspective += 1
             elif self.mode_perspective == 2:
-                glUniform3f(aux, 1.0, 0.0, 0.0)
+                glUniform3f(light_loc, 1.0, 0.0, 0.0)
                 self.mode_perspective = 0
 
-
+        # Dealing with movement of the cat
         if action == glfw.PRESS and (key == glfw.KEY_A or key == glfw.KEY_LEFT):
             translate_cube_x = pyrr.Vector3([-0.5, 0.0, 0.0])
             for i in range(m):
@@ -282,11 +287,12 @@ class Window:
 
 class Shader:
     '''
-    Esta clase representará al shader que utilizará el programa para renderizar los objetos OpenGl. Este se inicializa recibiendo como parámetro el vector que almacena los cubos a renderizar.
+    This class will represent the shader that will use the program to render OpenGl objects.
 
-    Esta clase contiene los siguientes métodos:
-        - vinculate_cubes: asocia a cada cubo de una lista de cubos data un VAO, VBO y EBO.
-        - vinculate_quads: asocia el suelo con un VAO, VBO y EBO.
+    This class has the following methods
+        - vinculate_cubes: associate each cube in a list of cubes using a VAO, VBO and EBO.
+        - vinculate_ground: associate the ground using VAO, VBO and EBO.
+        - vinculate_sky: associate the sky using VAO, VBO and EBO.
     '''
     def __init__(self):        
         self.shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
@@ -321,53 +327,36 @@ class Shader:
             glEnableVertexAttribArray(2)
             glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, cube.cube_vertices.itemsize * 8, ctypes.c_void_p(20))
 
-    def vinculate_ground(self, quad):
-        # Quad VAO
-        self.quad_VAO_g = glGenVertexArrays(1)
-        glBindVertexArray(self.quad_VAO_g)
+    def vinculate_quads(self, quads):
+        # List that contains the sky and the ground
+        self.quad_VAO = [0]*2 
+        self.quad_VBO = [0]*2
+        self.quad_EBO = [0]*2
 
-        # Quad Vertex Buffer Object
-        self.quad_VBO_g = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO_g)
-        glBufferData(GL_ARRAY_BUFFER, quad.quad_vertices.nbytes, quad.quad_vertices, GL_STATIC_DRAW)
+        for x, quad in enumerate(quads):
+            # Vertex array object for each quad in quads
+            self.quad_VAO[x] = glGenVertexArrays(1)
+            glBindVertexArray(self.quad_VAO[x])
 
-        # Quad Element Buffer Object
-        self.quad_EBO_g = glGenBuffers(1)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO_g)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
+            # Vertex Buffer Object for each cube in cubes
+            self.quad_VBO[x] = glGenBuffers(1)
+            glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO[x])
+            glBufferData(GL_ARRAY_BUFFER, quad.quad_vertices.nbytes, quad.quad_vertices, GL_STATIC_DRAW)
 
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(0))
+            # Quad Element Buffer Object
+            self.quad_EBO[x] = glGenBuffers(1)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO[x])
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
 
-        glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(12))
+            glEnableVertexAttribArray(0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(0))
 
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(20))
+            glEnableVertexAttribArray(1)
+            glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(12))
 
-    def vinculate_sky(self, quad):
-        # Quad VAO
-        self.quad_VAO_s = glGenVertexArrays(1)
-        glBindVertexArray(self.quad_VAO_s)
+            glEnableVertexAttribArray(2)
+            glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(20))
 
-        # Quad Vertex Buffer Object
-        self.quad_VBO_s = glGenBuffers(1)
-        glBindBuffer(GL_ARRAY_BUFFER, self.quad_VBO_s)
-        glBufferData(GL_ARRAY_BUFFER, quad.quad_vertices.nbytes, quad.quad_vertices, GL_STATIC_DRAW)
-
-        # Quad Element Buffer Object
-        self.quad_EBO_s = glGenBuffers(1)
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.quad_EBO_s)
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad.quad_indices.nbytes, quad.quad_indices, GL_STATIC_DRAW)
-
-        glEnableVertexAttribArray(0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(0))
-
-        glEnableVertexAttribArray(1)
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(12))
-
-        glEnableVertexAttribArray(2)
-        glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, quad.quad_vertices.itemsize * 8, ctypes.c_void_p(20))
 
 # Creating the window
 main_window = Window(1080, 720, "Miauzilla")
@@ -379,28 +368,26 @@ for i in range(n+m):
         my_cubes[i].load_texture(random.randint(0, 1))
         # my_cubes[i].load_texture(0)
     else:
-        # Creando el cubo principal que será el gato
+        # Creating the main cubes that are going to be Miauzilla
         my_cubes[i] = Cube()
         my_cubes[i].load_texture(2)
 
-# Creando el suelo
+# Creating the ground
 ground = Ground()
 ground.load_texture(3)
 
-# Creando el cielo
+# Creating the sky
 sky = Ground()
 sky.load_texture(4)
 
-# Iniciando los Shaders de my_cubes
+# Initialing the shader
 main_shader = Shader()
 main_shader.vinculate_cubes(my_cubes)
-main_shader.vinculate_ground(ground)
-main_shader.vinculate_sky(sky)
+main_shader.vinculate_quads([ground, sky])
 
-
+# Using the shader with OpenGL
 glUseProgram(main_shader.shader)
-aux = glGetUniformLocation(main_shader.shader, "light_direction")
-# main_shader.shader["light_direction"].SetValue(pyrr.Vector3([0,0,1]))
+
 
 glClearColor(0, 0.1, 0.1, 1)
 glEnable(GL_DEPTH_TEST)
@@ -423,7 +410,7 @@ for i in range(n):
                         random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
 
 for i in range(m):
-    # Seteando las posicion del gato principal
+    # Setting the position of the cat
     cube_position[n+i] = pyrr.Vector3(gato[i])
 
 # Matrix that will control the translation of the cubes
@@ -432,6 +419,7 @@ for i in range(n+m):
     # Seting the translation matrix to the initial position of the cube
     matrix_cube_translation[i] = pyrr.matrix44.create_from_translation(cube_position[i])
 
+# Default view:
 # eye, target, up
 # view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, 0]), pyrr.Vector3([0, 1, 0]))
 view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.5, -1]), pyrr.Vector3([0, 1, 0]))
@@ -439,21 +427,21 @@ view = pyrr.matrix44.create_look_at(pyrr.Vector3([0, 2, 3]), pyrr.Vector3([0, 1.
 model_loc = glGetUniformLocation(main_shader.shader, "model")
 proj_loc = glGetUniformLocation(main_shader.shader, "projection")
 view_loc = glGetUniformLocation(main_shader.shader, "view")
+# Creating a variable that is going to be used for the position of the light
+light_loc = glGetUniformLocation(main_shader.shader, "light_direction")
 
-# glUniformMatrix4fv(proj_loc, 1, GL_FALSE, projection)
-# glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
+# Initializing the score:
+score = 0
 
-#Iniciando el puntaje:
-puntaje = 0
 def main():
-    global view,puntaje
+    global view,score
     translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
     pygame.init()
     music = pygame.mixer.music.load('music/music.mp3')
     pygame.mixer.music.play(-1)
     hitSound = pygame.mixer.Sound('./music/hit.wav')
 
-    glfw.set_input_mode(main_window.win, glfw.STICKY_KEYS,GL_TRUE) 
+    glfw.set_input_mode(main_window.win, glfw.STICKY_KEYS, GL_TRUE) 
 	# Enable key event callback
     glfw.set_key_callback(main_window.win, main_window.key_event)
 
@@ -466,14 +454,14 @@ def main():
         glUniformMatrix4fv(view_loc, 1, GL_FALSE, view)
         # Drawing the ground
         model = matrix_ground_position
-        glBindVertexArray(main_shader.quad_VAO_g)
+        glBindVertexArray(main_shader.quad_VAO[0])
         glBindTexture(GL_TEXTURE_2D, ground.id_texture)
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
         glDrawElements(GL_TRIANGLES, len(quad_indices), GL_UNSIGNED_INT, None)
 
         # Drawing the sky
         model = matrix_sky_position
-        glBindVertexArray(main_shader.quad_VAO_s)
+        glBindVertexArray(main_shader.quad_VAO[1])
         glBindTexture(GL_TEXTURE_2D, sky.id_texture)
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, model)
         glDrawElements(GL_TRIANGLES, len(quad_indices), GL_UNSIGNED_INT, None)
@@ -484,13 +472,13 @@ def main():
                 cube_position[i] += translate_cube_z
                 if cube_position[i][2] >= 20.0:
                     cube_position[i] = pyrr.Vector3([random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
-                #Escala de todos los objetos que son obstaculos
+                # Scale the objects that aren't obstacles
                 escala = pyrr.matrix44.create_from_scale([1,4,1])
             else:
-                #Obteniendo los valores de la escala previamente difinida
+                # Obtaining the values of the scale previously defined
                 escala = pyrr.matrix44.create_from_scale(gato_escala[i-n])
             
-            #Hallando el model resultante al multiplicar la escala y la translacion
+            # Calculating the resulting model by multiplying the scale and translation
             model = np.dot(escala, matrix_cube_translation[i])
 
             glBindVertexArray(main_shader.cube_VAO[i])
@@ -501,13 +489,13 @@ def main():
 
         for i in range(m):
             for j in range(n):
-                #Condición para que exista un choque
+                # Condition for a crash
                 if abs(cube_position[i+n][2] - cube_position[j][2]) < .1 and abs(cube_position[i+n][0] - cube_position[j][0]) < 1:
                     hitSound.play()
                     cube_position[j] = pyrr.Vector3([random.randrange(-5.0, 5.0), 1.5, random.randrange(-100, -40)])
-                    puntaje+=1
+                    score += 1
                     os.system("clear")
-                    print("Tu puntaje actual es: ",puntaje)
+                    print("Your actual escore is:",score)
 
         glfw.swap_buffers(main_window.win)
 
