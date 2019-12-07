@@ -127,7 +127,7 @@
 -   By: A.L.
 
 ## Version 1.2.0:
--   Shadow implementation, a keyboard event, the letter ** E **, is used to change the type of lighting.
+-   Shadow implementation, a keyboard event, the letter **E**, is used to change the type of lighting.
 -   Implementation of movement from the arrow keys, in addition to **A**, **W**, **D** and **S**.
 -   By: A.L.
 
@@ -136,4 +136,8 @@
 -   Changing the _readme.md_ file.
 -   Changing main file:
     - _miauzilla\_cv.py_ to _miauzilla.py_.
+-   By: A.L.
+
+## Version 1.2.0c:
+-   Fixed _changelog.md_.
 -   By: A.L.
