@@ -44,7 +44,14 @@ from OpenGL.GL import (
 )
 from OpenGL.GL.shaders import compileProgram, compileShader
 
-from .config import HUD_FONT_SIZE, HUD_MARGIN, HUD_TEXT_COLOR
+from .config import (
+    HUD_FONT_SIZE,
+    HUD_MARGIN,
+    HUD_TEXT_COLOR,
+    MENU_SELECTED_TEXT_COLOR,
+    MENU_TEXT_FONT_SIZE,
+    MENU_TITLE_FONT_SIZE,
+)
 
 
 HUD_VERTEX_SHADER_SOURCE = """
@@ -82,6 +89,8 @@ class ScoreHud:
             pygame.font.init()
 
         self.font = pygame.font.Font(None, HUD_FONT_SIZE)
+        self.menu_title_font = pygame.font.Font(None, MENU_TITLE_FONT_SIZE)
+        self.menu_text_font = pygame.font.Font(None, MENU_TEXT_FONT_SIZE)
         self.program = compileProgram(
             compileShader(HUD_VERTEX_SHADER_SOURCE, GL_VERTEX_SHADER),
             compileShader(HUD_FRAGMENT_SHADER_SOURCE, GL_FRAGMENT_SHADER),
@@ -120,15 +129,25 @@ class ScoreHud:
         glUseProgram(self.program)
         glUniform1i(glGetUniformLocation(self.program, "hud_texture"), 0)
 
-    def _build_overlay_surface(self, text):
-        overlay_surface = self.font.render(text, True, HUD_TEXT_COLOR)
+    def _build_overlay_surface(self, text, font, color):
+        overlay_surface = font.render(text, True, color)
         return pygame.transform.flip(overlay_surface, False, True)
 
-    def _build_vertices(self, overlay_width, overlay_height, framebuffer_width, framebuffer_height, align_right):
-        top = HUD_MARGIN
-        if align_right:
+    def _build_vertices(
+        self,
+        overlay_width,
+        overlay_height,
+        framebuffer_width,
+        framebuffer_height,
+        horizontal_alignment,
+        top,
+    ):
+        if horizontal_alignment == "right":
             right = framebuffer_width - HUD_MARGIN
             left = right - overlay_width
+        elif horizontal_alignment == "center":
+            left = (framebuffer_width - overlay_width) / 2
+            right = left + overlay_width
         else:
             left = HUD_MARGIN
             right = left + overlay_width
@@ -161,8 +180,17 @@ class ScoreHud:
             dtype=np.float32,
         )
 
-    def _update_texture(self, text, framebuffer_width, framebuffer_height, align_right):
-        overlay_surface = self._build_overlay_surface(text)
+    def _update_texture(
+        self,
+        text,
+        font,
+        color,
+        framebuffer_width,
+        framebuffer_height,
+        horizontal_alignment,
+        top,
+    ):
+        overlay_surface = self._build_overlay_surface(text, font, color)
         overlay_width, overlay_height = overlay_surface.get_size()
         texture_bytes = pygame.image.tobytes(overlay_surface, "RGBA", False)
         vertices = self._build_vertices(
@@ -170,7 +198,8 @@ class ScoreHud:
             overlay_height,
             framebuffer_width,
             framebuffer_height,
-            align_right,
+            horizontal_alignment,
+            top,
         )
 
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
@@ -189,21 +218,121 @@ class ScoreHud:
         glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer)
         glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_DYNAMIC_DRAW)
 
-    def _render_overlay(self, text, framebuffer_width, framebuffer_height, align_right):
-        self._update_texture(text, framebuffer_width, framebuffer_height, align_right)
+    def _render_overlay(
+        self,
+        text,
+        font,
+        color,
+        framebuffer_width,
+        framebuffer_height,
+        horizontal_alignment="left",
+        top=HUD_MARGIN,
+    ):
+        self._update_texture(
+            text,
+            font,
+            color,
+            framebuffer_width,
+            framebuffer_height,
+            horizontal_alignment,
+            top,
+        )
         glUseProgram(self.program)
         glBindVertexArray(self.vertex_array_object)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
         glDrawElements(GL_TRIANGLES, len(self.indices), GL_UNSIGNED_INT, None)
 
-    def render(self, score, framebuffer_width, framebuffer_height, paused=False):
-        self._render_overlay(f"Score: {score}", framebuffer_width, framebuffer_height, False)
+    def _render_menu(self, framebuffer_width, framebuffer_height, selected_index, volume_percentage):
+        menu_top = framebuffer_height * 0.24
+        self._render_overlay(
+            "Miauzilla",
+            self.menu_title_font,
+            HUD_TEXT_COLOR,
+            framebuffer_width,
+            framebuffer_height,
+            horizontal_alignment="center",
+            top=menu_top,
+        )
+        self._render_overlay(
+            "Reverse endless runner: destroy as much as you can.",
+            self.menu_text_font,
+            HUD_TEXT_COLOR,
+            framebuffer_width,
+            framebuffer_height,
+            horizontal_alignment="center",
+            top=menu_top + 84,
+        )
+        menu_items = [
+            "Start game",
+            f"Music volume: {volume_percentage}%",
+            "Quit",
+        ]
+        for index, menu_item in enumerate(menu_items):
+            prefix = "> " if index == selected_index else "  "
+            item_color = MENU_SELECTED_TEXT_COLOR if index == selected_index else HUD_TEXT_COLOR
+            self._render_overlay(
+                f"{prefix}{menu_item}",
+                self.menu_text_font,
+                item_color,
+                framebuffer_width,
+                framebuffer_height,
+                horizontal_alignment="center",
+                top=menu_top + 160 + (index * 42),
+            )
+        self._render_overlay(
+            "Up/Down select  Left/Right volume  Enter confirm",
+            self.menu_text_font,
+            HUD_TEXT_COLOR,
+            framebuffer_width,
+            framebuffer_height,
+            horizontal_alignment="center",
+            top=menu_top + 304,
+        )
+        self._render_overlay(
+            "WASD/Arrows move  +/- volume  P pause  Q camera  E light  Esc quit",
+            self.menu_text_font,
+            HUD_TEXT_COLOR,
+            framebuffer_width,
+            framebuffer_height,
+            horizontal_alignment="center",
+            top=menu_top + 346,
+        )
+
+    def render(
+        self,
+        score,
+        framebuffer_width,
+        framebuffer_height,
+        paused=False,
+        show_menu=False,
+        menu_selected_index=0,
+        volume_percentage=100,
+    ):
+        if show_menu:
+            self._render_menu(
+                framebuffer_width,
+                framebuffer_height,
+                menu_selected_index,
+                volume_percentage,
+            )
+            return
+
+        self._render_overlay(
+            f"Score: {score}",
+            self.font,
+            HUD_TEXT_COLOR,
+            framebuffer_width,
+            framebuffer_height,
+            horizontal_alignment="left",
+        )
         if paused:
             self._render_overlay(
                 "Paused - press P to resume",
+                self.font,
+                HUD_TEXT_COLOR,
                 framebuffer_width,
                 framebuffer_height,
-                True,
+                horizontal_alignment="right",
             )
 
     def shutdown(self):

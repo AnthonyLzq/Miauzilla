@@ -41,12 +41,16 @@ python miauzilla.py
 ## Controls
 
 - `W`, `A`, `S`, `D` or arrow keys: move Miauzilla
+- `Up/Down` or `W/S`: navigate the initial menu
+- `Left/Right` or `A/D`: adjust menu volume
+- `Enter`: confirm the selected menu option
 - `Q`: cycle camera
 - `E`: cycle light direction
 - `P`: pause or resume
+- `-` / `+`: lower or raise volume
 - `Esc`: quit
 
-Movement is continuous while you hold the keys down, and Miauzilla stays clamped inside the playable area.
+Movement is continuous while you hold the keys down, Miauzilla stays clamped inside the playable area, the game opens on a diagonal start menu view, and music starts at a lower default volume.
 
 ## Project layout
 

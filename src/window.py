@@ -44,9 +44,26 @@ class Window:
         if action != glfw.PRESS:
             return
 
+        if self.game.menu_visible:
+            if key in (glfw.KEY_UP, glfw.KEY_W):
+                self.game.menu_move_selection(-1)
+            elif key in (glfw.KEY_DOWN, glfw.KEY_S):
+                self.game.menu_move_selection(1)
+            elif key in (glfw.KEY_LEFT, glfw.KEY_A):
+                self.game.menu_adjust_volume(-1)
+            elif key in (glfw.KEY_RIGHT, glfw.KEY_D):
+                self.game.menu_adjust_volume(1)
+            elif key in (glfw.KEY_ENTER, glfw.KEY_KP_ENTER):
+                self.game.menu_activate_selection()
+            return
+
         if key == glfw.KEY_Q:
             self.game.cycle_camera()
         elif key == glfw.KEY_E:
             self.game.cycle_light()
         elif key == glfw.KEY_P:
             self.game.toggle_pause()
+        elif key in (glfw.KEY_MINUS, glfw.KEY_KP_SUBTRACT):
+            self.game.decrease_volume()
+        elif key in (glfw.KEY_EQUAL, glfw.KEY_KP_ADD):
+            self.game.increase_volume()
