@@ -10,6 +10,7 @@ The project was revived to run on a modern Python codebase again:
 - asset loading relative to the project instead of the current shell directory
 - runtime initialization moved out of import-time side effects
 - compatibility fixes for current Python and desktop OpenGL
+- runtime split into focused modules under `src/`
 
 ## Requirements
 
@@ -45,7 +46,15 @@ python miauzilla.py
 
 ## Project layout
 
-- `miauzilla.py`: main game entrypoint and runtime
+- `miauzilla.py`: thin top-level entrypoint that preserves the original run command
+- `src/index.py`: package entrypoint
+- `src/game.py`: main loop and gameplay orchestration
+- `src/rendering.py`: shaders, OpenGL objects, and buffer wiring
+- `src/audio.py`: music and sound effect setup
+- `src/assets.py`: texture loading and obstacle spawn helpers
+- `src/config.py`: paths, window settings, and game constants
+- `src/geometry.py`: cube and quad geometry data
+- `src/window.py`: GLFW window and input callbacks
 - `textures/`: textures used by obstacles, the cat, the ground, and the sky
 - `music/`: background music and hit sound
 - `changelog.md`: historical milestones for the project
