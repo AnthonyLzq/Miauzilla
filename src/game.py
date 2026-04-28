@@ -31,12 +31,18 @@ from OpenGL.GL import (
 from .assets import load_texture_assets, random_spawn_position
 from .audio import AudioManager
 from .config import (
+    CAMERA_UP_VECTOR,
     CAT_MOVE_SPEED,
     CAT_POSITIONS,
     CAT_SCALES,
     CAT_X_BOUNDS,
     CAT_Z_BOUNDS,
+    DEFAULT_CAMERA_EYE,
+    DEFAULT_CAMERA_TARGET,
+    DIAGONAL_CAMERA_TARGET,
+    LEFT_DIAGONAL_CAMERA_EYE,
     OBSTACLE_COUNT,
+    RIGHT_DIAGONAL_CAMERA_EYE,
     WINDOW_HEIGHT,
     WINDOW_TITLE,
     WINDOW_WIDTH,
@@ -59,9 +65,9 @@ class Game:
         self.score = 0
         self.paused = False
         self.view = pyrr.matrix44.create_look_at(
-            pyrr.Vector3([0, 2, 3]),
-            pyrr.Vector3([0, 1.5, -1]),
-            pyrr.Vector3([0, 1, 0]),
+            pyrr.Vector3(DEFAULT_CAMERA_EYE),
+            pyrr.Vector3(DEFAULT_CAMERA_TARGET),
+            pyrr.Vector3(CAMERA_UP_VECTOR),
         )
         self.translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
         self.last_frame_time = glfw.get_time()
@@ -138,23 +144,23 @@ class Game:
     def cycle_camera(self):
         if self.window.mode_perspective == 0:
             self.view = pyrr.matrix44.create_look_at(
-                pyrr.Vector3([10, 8, 3]),
-                pyrr.Vector3([0, 1.5, 0]),
-                pyrr.Vector3([0, 1, 0]),
+                pyrr.Vector3(RIGHT_DIAGONAL_CAMERA_EYE),
+                pyrr.Vector3(DIAGONAL_CAMERA_TARGET),
+                pyrr.Vector3(CAMERA_UP_VECTOR),
             )
             self.window.mode_perspective = 1
         elif self.window.mode_perspective == 1:
             self.view = pyrr.matrix44.create_look_at(
-                pyrr.Vector3([-10, 8, 3]),
-                pyrr.Vector3([0, 1.5, 0]),
-                pyrr.Vector3([0, 1, 0]),
+                pyrr.Vector3(LEFT_DIAGONAL_CAMERA_EYE),
+                pyrr.Vector3(DIAGONAL_CAMERA_TARGET),
+                pyrr.Vector3(CAMERA_UP_VECTOR),
             )
             self.window.mode_perspective = 2
         else:
             self.view = pyrr.matrix44.create_look_at(
-                pyrr.Vector3([0, 2, 3]),
-                pyrr.Vector3([0, 1.5, -1]),
-                pyrr.Vector3([0, 1, 0]),
+                pyrr.Vector3(DEFAULT_CAMERA_EYE),
+                pyrr.Vector3(DEFAULT_CAMERA_TARGET),
+                pyrr.Vector3(CAMERA_UP_VECTOR),
             )
             self.window.mode_perspective = 0
 
