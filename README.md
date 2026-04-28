@@ -43,6 +43,7 @@ python miauzilla.py
 - `W`, `A`, `S`, `D` or arrow keys: move Miauzilla
 - `Q`: cycle camera
 - `E`: cycle light direction
+- `P`: pause or resume
 - `Esc`: quit
 
 Movement is continuous while you hold the keys down, and Miauzilla stays clamped inside the playable area.

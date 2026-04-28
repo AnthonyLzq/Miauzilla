@@ -48,3 +48,5 @@ class Window:
             self.game.cycle_camera()
         elif key == glfw.KEY_E:
             self.game.cycle_light()
+        elif key == glfw.KEY_P:
+            self.game.toggle_pause()

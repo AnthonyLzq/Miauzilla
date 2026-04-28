@@ -57,6 +57,7 @@ class Game:
         self.obstacle_count = OBSTACLE_COUNT
         self.cat_count = len(CAT_POSITIONS)
         self.score = 0
+        self.paused = False
         self.view = pyrr.matrix44.create_look_at(
             pyrr.Vector3([0, 2, 3]),
             pyrr.Vector3([0, 1.5, -1]),
@@ -168,6 +169,14 @@ class Game:
         else:
             glUniform3f(self.light_direction_uniform_location, 1.0, 0.0, 0.0)
             self.window.light_perspective = 0
+
+    def toggle_pause(self):
+        self.paused = not self.paused
+        self.last_frame_time = glfw.get_time()
+        if self.paused:
+            self.audio.pause()
+        else:
+            self.audio.resume()
 
     def _move_cat(self, delta_x, delta_z):
         cat_positions = self.cube_position[self.obstacle_count : self.obstacle_count + self.cat_count]
@@ -283,7 +292,7 @@ class Game:
     def _draw_hud(self):
         framebuffer_width, framebuffer_height = glfw.get_framebuffer_size(self.window.win)
         glDisable(GL_DEPTH_TEST)
-        self.hud.render(self.score, framebuffer_width, framebuffer_height)
+        self.hud.render(self.score, framebuffer_width, framebuffer_height, paused=self.paused)
         glEnable(GL_DEPTH_TEST)
 
     def run(self):
@@ -301,10 +310,12 @@ class Game:
                 glfw.poll_events()
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-                self._update_cat_movement(delta_time)
-                self._update_obstacles()
+                if not self.paused:
+                    self._update_cat_movement(delta_time)
+                    self._update_obstacles()
+                    self._detect_collisions()
+
                 self._draw_scene()
-                self._detect_collisions()
                 self._draw_hud()
 
                 glfw.swap_buffers(self.window.win)

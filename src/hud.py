@@ -120,23 +120,26 @@ class ScoreHud:
         glUseProgram(self.program)
         glUniform1i(glGetUniformLocation(self.program, "hud_texture"), 0)
 
-    def _update_texture(self, score, framebuffer_width, framebuffer_height):
-        score_surface = self.font.render(f"Score: {score}", True, HUD_TEXT_COLOR)
-        score_surface = pygame.transform.flip(score_surface, False, True)
-        score_width, score_height = score_surface.get_size()
-        texture_bytes = pygame.image.tobytes(score_surface, "RGBA", False)
+    def _build_overlay_surface(self, text):
+        overlay_surface = self.font.render(text, True, HUD_TEXT_COLOR)
+        return pygame.transform.flip(overlay_surface, False, True)
 
-        left = HUD_MARGIN
+    def _build_vertices(self, overlay_width, overlay_height, framebuffer_width, framebuffer_height, align_right):
         top = HUD_MARGIN
-        right = left + score_width
-        bottom = top + score_height
+        if align_right:
+            right = framebuffer_width - HUD_MARGIN
+            left = right - overlay_width
+        else:
+            left = HUD_MARGIN
+            right = left + overlay_width
+        bottom = top + overlay_height
 
         left_ndc = (left / framebuffer_width) * 2.0 - 1.0
         right_ndc = (right / framebuffer_width) * 2.0 - 1.0
         top_ndc = 1.0 - (top / framebuffer_height) * 2.0
         bottom_ndc = 1.0 - (bottom / framebuffer_height) * 2.0
 
-        vertices = np.array(
+        return np.array(
             [
                 left_ndc,
                 top_ndc,
@@ -158,13 +161,25 @@ class ScoreHud:
             dtype=np.float32,
         )
 
+    def _update_texture(self, text, framebuffer_width, framebuffer_height, align_right):
+        overlay_surface = self._build_overlay_surface(text)
+        overlay_width, overlay_height = overlay_surface.get_size()
+        texture_bytes = pygame.image.tobytes(overlay_surface, "RGBA", False)
+        vertices = self._build_vertices(
+            overlay_width,
+            overlay_height,
+            framebuffer_width,
+            framebuffer_height,
+            align_right,
+        )
+
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
         glTexImage2D(
             GL_TEXTURE_2D,
             0,
             GL_RGBA,
-            score_width,
-            score_height,
+            overlay_width,
+            overlay_height,
             0,
             GL_RGBA,
             GL_UNSIGNED_BYTE,
@@ -174,20 +189,22 @@ class ScoreHud:
         glBindBuffer(GL_ARRAY_BUFFER, self.vertex_buffer)
         glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_DYNAMIC_DRAW)
 
-        self.cached_score = score
-        self.cached_framebuffer_size = (framebuffer_width, framebuffer_height)
-
-    def render(self, score, framebuffer_width, framebuffer_height):
-        if self.cached_score != score or self.cached_framebuffer_size != (
-            framebuffer_width,
-            framebuffer_height,
-        ):
-            self._update_texture(score, framebuffer_width, framebuffer_height)
-
+    def _render_overlay(self, text, framebuffer_width, framebuffer_height, align_right):
+        self._update_texture(text, framebuffer_width, framebuffer_height, align_right)
         glUseProgram(self.program)
         glBindVertexArray(self.vertex_array_object)
         glBindTexture(GL_TEXTURE_2D, self.texture_id)
         glDrawElements(GL_TRIANGLES, len(self.indices), GL_UNSIGNED_INT, None)
+
+    def render(self, score, framebuffer_width, framebuffer_height, paused=False):
+        self._render_overlay(f"Score: {score}", framebuffer_width, framebuffer_height, False)
+        if paused:
+            self._render_overlay(
+                "Paused - press P to resume",
+                framebuffer_width,
+                framebuffer_height,
+                True,
+            )
 
     def shutdown(self):
         glDeleteTextures(1, [self.texture_id])
