@@ -1,0 +1,56 @@
+# Miauzilla
+
+Miauzilla is a small 3D endless runner built with Python, GLFW, PyOpenGL, and pygame. You control a giant cat made of cubes and crash into buildings to score points.
+
+## Current status
+
+The project was revived to run on a modern Python codebase again:
+
+- explicit dependency installation through `requirements.txt`
+- asset loading relative to the project instead of the current shell directory
+- runtime initialization moved out of import-time side effects
+- compatibility fixes for current Python and desktop OpenGL
+
+## Requirements
+
+- Python 3.10+
+- OpenGL-capable desktop environment
+- audio output is optional; the game will still run if pygame cannot initialize the mixer
+
+## Setup
+
+Create and activate a virtual environment, then install dependencies:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+## Run
+
+From the repository root:
+
+```bash
+python miauzilla.py
+```
+
+## Controls
+
+- `W`, `A`, `S`, `D` or arrow keys: move Miauzilla
+- `Q`: cycle camera
+- `E`: cycle light direction
+- `Esc`: quit
+
+## Project layout
+
+- `miauzilla.py`: main game entrypoint and runtime
+- `textures/`: textures used by obstacles, the cat, the ground, and the sky
+- `music/`: background music and hit sound
+- `changelog.md`: historical milestones for the project
+
+## Authors
+
+- **Anthony Luzquiños** - Initial work and documentation - [AnthonyLzq](https://github.com/AnthonyLzq)
+- Contributors from the original course project can be found in the repository history
