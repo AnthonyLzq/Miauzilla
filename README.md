@@ -45,6 +45,8 @@ python miauzilla.py
 - `E`: cycle light direction
 - `Esc`: quit
 
+Movement is continuous while you hold the keys down, and Miauzilla stays clamped inside the playable area.
+
 ## Project layout
 
 - `miauzilla.py`: thin top-level entrypoint that preserves the original run command

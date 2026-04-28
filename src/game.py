@@ -31,8 +31,11 @@ from OpenGL.GL import (
 from .assets import load_texture_assets, random_spawn_position
 from .audio import AudioManager
 from .config import (
+    CAT_MOVE_SPEED,
     CAT_POSITIONS,
     CAT_SCALES,
+    CAT_X_BOUNDS,
+    CAT_Z_BOUNDS,
     OBSTACLE_COUNT,
     WINDOW_HEIGHT,
     WINDOW_TITLE,
@@ -60,6 +63,7 @@ class Game:
             pyrr.Vector3([0, 1, 0]),
         )
         self.translate_cube_z = pyrr.Vector3([0.0, 0.0, 0.1])
+        self.last_frame_time = glfw.get_time()
         self.audio = AudioManager()
         self.window = Window(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE, self)
 
@@ -165,10 +169,58 @@ class Game:
             glUniform3f(self.light_direction_uniform_location, 1.0, 0.0, 0.0)
             self.window.light_perspective = 0
 
-    def move_cat(self, delta_x, delta_z):
-        translation = pyrr.Vector3([delta_x, 0.0, delta_z])
+    def _move_cat(self, delta_x, delta_z):
+        cat_positions = self.cube_position[self.obstacle_count : self.obstacle_count + self.cat_count]
+        min_x = min(position[0] for position in cat_positions)
+        max_x = max(position[0] for position in cat_positions)
+        min_z = min(position[2] for position in cat_positions)
+        max_z = max(position[2] for position in cat_positions)
+
+        clamped_delta_x = min(max(delta_x, CAT_X_BOUNDS[0] - min_x), CAT_X_BOUNDS[1] - max_x)
+        clamped_delta_z = min(max(delta_z, CAT_Z_BOUNDS[0] - min_z), CAT_Z_BOUNDS[1] - max_z)
+
+        if clamped_delta_x == 0.0 and clamped_delta_z == 0.0:
+            return
+
+        translation = pyrr.Vector3([clamped_delta_x, 0.0, clamped_delta_z])
         for index in range(self.obstacle_count, self.obstacle_count + self.cat_count):
             self.cube_position[index] += translation
+
+    def _update_cat_movement(self, delta_time):
+        move_x = 0.0
+        move_z = 0.0
+
+        if glfw.get_key(self.window.win, glfw.KEY_A) == glfw.PRESS or glfw.get_key(
+            self.window.win, glfw.KEY_LEFT
+        ) == glfw.PRESS:
+            move_x -= 1.0
+        if glfw.get_key(self.window.win, glfw.KEY_D) == glfw.PRESS or glfw.get_key(
+            self.window.win, glfw.KEY_RIGHT
+        ) == glfw.PRESS:
+            move_x += 1.0
+        if glfw.get_key(self.window.win, glfw.KEY_W) == glfw.PRESS or glfw.get_key(
+            self.window.win, glfw.KEY_UP
+        ) == glfw.PRESS:
+            move_z -= 1.0
+        if glfw.get_key(self.window.win, glfw.KEY_S) == glfw.PRESS or glfw.get_key(
+            self.window.win, glfw.KEY_DOWN
+        ) == glfw.PRESS:
+            move_z += 1.0
+
+        if move_x == 0.0 and move_z == 0.0:
+            return
+
+        movement = np.array([move_x, move_z], dtype=np.float32)
+        movement_length = np.linalg.norm(movement)
+        if movement_length == 0.0:
+            return
+
+        normalized_movement = movement / movement_length
+        distance_per_frame = CAT_MOVE_SPEED * delta_time
+        self._move_cat(
+            float(normalized_movement[0] * distance_per_frame),
+            float(normalized_movement[1] * distance_per_frame),
+        )
 
     def _draw_quad(self, vao, texture_id, model_matrix):
         glBindVertexArray(vao)
@@ -242,9 +294,14 @@ class Game:
                 glfw.get_key(self.window.win, glfw.KEY_ESCAPE) != glfw.PRESS
                 and not glfw.window_should_close(self.window.win)
             ):
+                current_time = glfw.get_time()
+                delta_time = current_time - self.last_frame_time
+                self.last_frame_time = current_time
+
                 glfw.poll_events()
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
+                self._update_cat_movement(delta_time)
                 self._update_obstacles()
                 self._draw_scene()
                 self._detect_collisions()

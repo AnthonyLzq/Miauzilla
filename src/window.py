@@ -48,11 +48,3 @@ class Window:
             self.game.cycle_camera()
         elif key == glfw.KEY_E:
             self.game.cycle_light()
-        elif key in (glfw.KEY_A, glfw.KEY_LEFT):
-            self.game.move_cat(-0.5, 0.0)
-        elif key in (glfw.KEY_D, glfw.KEY_RIGHT):
-            self.game.move_cat(0.5, 0.0)
-        elif key in (glfw.KEY_S, glfw.KEY_DOWN):
-            self.game.move_cat(0.0, 0.5)
-        elif key in (glfw.KEY_W, glfw.KEY_UP):
-            self.game.move_cat(0.0, -0.5)
