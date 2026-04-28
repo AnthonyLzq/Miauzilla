@@ -11,6 +11,7 @@ The project was revived to run on a modern Python codebase again:
 - runtime initialization moved out of import-time side effects
 - compatibility fixes for current Python and desktop OpenGL
 - runtime split into focused modules under `src/`
+- on-screen score HUD rendered inside the game window
 
 ## Requirements
 
@@ -54,6 +55,7 @@ python miauzilla.py
 - `src/assets.py`: texture loading and obstacle spawn helpers
 - `src/config.py`: paths, window settings, and game constants
 - `src/geometry.py`: cube and quad geometry data
+- `src/hud.py`: score overlay rendered on top of the 3D scene
 - `src/window.py`: GLFW window and input callbacks
 - `textures/`: textures used by obstacles, the cat, the ground, and the sky
 - `music/`: background music and hit sound

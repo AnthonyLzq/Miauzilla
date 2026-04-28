@@ -18,6 +18,7 @@ from OpenGL.GL import (
     glBlendFunc,
     glClear,
     glClearColor,
+    glDisable,
     glDrawElements,
     glEnable,
     glGetUniformLocation,
@@ -38,6 +39,7 @@ from .config import (
     WINDOW_WIDTH,
 )
 from .geometry import CUBE_INDICES, QUAD_INDICES
+from .hud import ScoreHud
 from .rendering import Cube, Ground, Shader
 from .window import Window
 
@@ -63,6 +65,7 @@ class Game:
 
         self._create_scene()
         self.audio.initialize()
+        self.hud = ScoreHud()
 
     def _texture(self, index):
         return self.texture_surfaces[index], self.texture_data[index]
@@ -151,6 +154,7 @@ class Game:
             self.window.mode_perspective = 0
 
     def cycle_light(self):
+        glUseProgram(self.shader.program)
         if self.window.light_perspective == 0:
             glUniform3f(self.light_direction_uniform_location, 0.0, 0.0, 1.0)
             self.window.light_perspective = 1
@@ -185,6 +189,7 @@ class Game:
                 self._reset_obstacle_position(index)
 
     def _draw_scene(self):
+        glUseProgram(self.shader.program)
         glUniformMatrix4fv(self.view_uniform_location, 1, GL_FALSE, self.view)
         self._draw_quad(
             self.shader.quad_vertex_array_objects[0],
@@ -222,7 +227,12 @@ class Game:
                     self.audio.play_hit()
                     self._reset_obstacle_position(obstacle_index)
                     self.score += 1
-                    print(f"Your actual score is: {self.score}")
+
+    def _draw_hud(self):
+        framebuffer_width, framebuffer_height = glfw.get_framebuffer_size(self.window.win)
+        glDisable(GL_DEPTH_TEST)
+        self.hud.render(self.score, framebuffer_width, framebuffer_height)
+        glEnable(GL_DEPTH_TEST)
 
     def run(self):
         glfw.set_input_mode(self.window.win, glfw.STICKY_KEYS, GL_TRUE)
@@ -238,9 +248,11 @@ class Game:
                 self._update_obstacles()
                 self._draw_scene()
                 self._detect_collisions()
+                self._draw_hud()
 
                 glfw.swap_buffers(self.window.win)
         finally:
+            self.hud.shutdown()
             self.audio.shutdown()
             glfw.terminate()
 

@@ -5,6 +5,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 WINDOW_WIDTH = 1080
 WINDOW_HEIGHT = 720
 WINDOW_TITLE = "Miauzilla"
+HUD_FONT_SIZE = 36
+HUD_MARGIN = 16
+HUD_TEXT_COLOR = (255, 255, 255, 255)
 
 TEXTURE_PATHS = [
     BASE_DIR / "textures" / "02-obstacle.png",
