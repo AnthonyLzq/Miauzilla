@@ -1,5 +1,13 @@
 # Miauzilla's changelog
 
+## Version 1.3.0:
+-   Revived the runtime so the game initializes explicitly instead of doing heavy work at import time.
+-   Fixed Python-modern compatibility issues in obstacle spawning and OpenGL buffer setup.
+-   Updated shaders and window creation for a desktop OpenGL context.
+-   Added reproducible dependency installation through `requirements.txt`.
+-   Updated `readme.md` with current setup and controls.
+-   By: Copilot.
+
 ## Version 1.0.0:
 -   Drawing a multicolored triangle on the scene using _Modern OpenGL_.
 -   By: A.L.

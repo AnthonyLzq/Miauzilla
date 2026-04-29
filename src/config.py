@@ -1,0 +1,78 @@
+from pathlib import Path
+
+
+# Project paths
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Window
+WINDOW_WIDTH = 1080
+WINDOW_HEIGHT = 720
+WINDOW_TITLE = "Miauzilla"
+
+# HUD and menu
+HUD_FONT_SIZE = 36
+HUD_MARGIN = 16
+HUD_TEXT_COLOR = (255, 255, 255, 255)
+MENU_TITLE_FONT_SIZE = 72
+MENU_TEXT_FONT_SIZE = 32
+MENU_SELECTED_TEXT_COLOR = (255, 221, 87, 255)
+
+# Audio
+INITIAL_MUSIC_VOLUME = 0.35
+VOLUME_STEP = 0.05
+
+# Cameras
+DEFAULT_CAMERA_EYE = [0.0, 2.0, 3.0]
+DEFAULT_CAMERA_TARGET = [0.0, 1.5, -1.0]
+RIGHT_DIAGONAL_CAMERA_EYE = [10.0, 8.0, 3.0]
+LEFT_DIAGONAL_CAMERA_EYE = [-10.0, 8.0, 3.0]
+DIAGONAL_CAMERA_TARGET = [0.0, 1.5, -1.0]
+CAMERA_UP_VECTOR = [0.0, 1.0, 0.0]
+
+# Assets
+TEXTURE_PATHS = [
+    BASE_DIR / "textures" / "02-obstacle.png",
+    BASE_DIR / "textures" / "02-obstacle-2.png",
+    BASE_DIR / "textures" / "01-character.png",
+    BASE_DIR / "textures" / "03-ground.png",
+    BASE_DIR / "textures" / "04-sky.png",
+]
+BACKGROUND_MUSIC_PATH = BASE_DIR / "music" / "music.mp3"
+HIT_SOUND_PATH = BASE_DIR / "music" / "hit.wav"
+
+# Obstacles and movement
+OBSTACLE_COUNT = 35
+OBSTACLE_SPAWN_X_RANGE = (-5, 4)
+OBSTACLE_SPAWN_Y = 1.5
+OBSTACLE_SPAWN_Z_RANGE = (-100, -41)
+CAT_MOVE_SPEED = 4.0
+CAT_X_BOUNDS = (-5.0, 5.0)
+CAT_Z_BOUNDS = (-7.5, 1.0)
+
+# Cat model
+CAT_POSITIONS = [
+    [0.0, 0.5, -4.5],    # body 1/2
+    [0.0, 0.5, -3.5],    # body 2/2
+    [0.0, 0.5, -2.5],    # tail 1/3
+    [0.0, 0.5, -1.5],    # tail 2/3
+    [0.0, 0.5, -0.5],    # tail 3/3
+    [0.0, 1.0, -5.0],    # head 1/2
+    [0.0, 1.0, -5.5],    # head 2/2
+    [0.25, 0.0, -3.25],  # right back leg
+    [-0.25, 0.0, -3.25], # left back leg
+    [0.25, 0.0, -4.75],  # right front leg
+    [-0.25, 0.0, -4.75], # left front leg
+]
+CAT_SCALES = [
+    [1.0, 1.0, 1.0],    # body 1/2
+    [1.0, 1.0, 1.0],    # body 2/2
+    [0.5, 0.5, 1.0],    # tail 1/3
+    [0.3, 0.3, 1.0],    # tail 2/3
+    [0.2, 0.2, 1.0],    # tail 3/3
+    [1.0, 1.0, 1.0],    # head 1/2
+    [0.5, 0.5, 0.5],    # head 2/2
+    [0.25, 1.0, 0.25],  # right back leg
+    [0.25, 1.0, 0.25],  # left back leg
+    [0.25, 1.0, 0.25],  # right front leg
+    [0.25, 1.0, 0.25],  # left front leg
+]
